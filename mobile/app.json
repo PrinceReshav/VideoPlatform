@@ -1,0 +1,55 @@
+{
+  "name": "Video Platform",
+  "slug": "video-platform-mobile",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "icon": "./assets/icon.png",
+  "userInterfaceStyle": "automatic",
+  "splash": {
+    "image": "./assets/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#0f172a"
+  },
+  "assetBundlePatterns": ["**/*"],
+  "ios": {
+    "supportsTablet": true,
+    "bundleIdentifier": "com.videoplatform.mobile",
+    "infoPlist": {
+      "NSAppTransportSecurity": {
+        "NSAllowsArbitraryLoads": true
+      }
+    }
+  },
+  "android": {
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/adaptive-icon.png",
+      "backgroundColor": "#0f172a"
+    },
+    "package": "com.videoplatform.mobile",
+    "permissions": [
+      "INTERNET",
+      "READ_EXTERNAL_STORAGE",
+      "WRITE_EXTERNAL_STORAGE",
+      "CAMERA",
+      "RECORD_AUDIO"
+    ]
+  },
+  "web": {
+    "favicon": "./assets/favicon.png"
+  },
+  "plugins": [
+    "expo-router",
+    "expo-av",
+    "expo-secure-store",
+    "expo-image-picker",
+    "expo-file-system",
+    "expo-background-task",
+    "expo-task-manager"
+  ],
+  "extra": {
+    "apiUrl": "http://localhost:8080/api/v1",
+    "eas": {
+      "projectId": "video-platform-mobile"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Platform</title>
+  </head>
+  <body>
+    <div id="root"><div class="app-boot"><div class="app-boot-spinner"></div><strong>VideoPlatform</strong><span>Loading application…</span></div></div>
+    <script>
+      (() => {
+        const showBootError = (message) => {
+          const root = document.getElementById('root');
+          if (!root || root.dataset.appBootFailed === 'true') return;
+          root.dataset.appBootFailed = 'true';
+          root.innerHTML = '<div class="app-boot app-boot-error"><strong>VideoPlatform could not start</strong><span>' + String(message || 'Unknown startup error') + '</span><button onclick="location.reload()">Reload</button></div>';
+        };
+        window.addEventListener('error', (event) => showBootError(event.error?.message || event.message));
+        window.addEventListener('unhandledrejection', (event) => showBootError(event.reason?.message || event.reason));
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+import React, { forwardRef } from 'react';
+import { clsx } from 'clsx';
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> { variant?: 'default'|'success'|'warning'|'error'|'info'; size?: 'sm'|'md'|'lg'; }
+export const Badge=forwardRef<HTMLSpanElement,BadgeProps>(({className,variant='default',size='md',...props},ref)=>{const v:Record<NonNullable<BadgeProps['variant']>,string>={default:'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',success:'bg-[var(--color-success)]/10 text-[var(--color-success)]',warning:'bg-[var(--color-warning)]/10 text-[var(--color-warning)]',error:'bg-[var(--color-error)]/10 text-[var(--color-error)]',info:'bg-[var(--color-info)]/10 text-[var(--color-info)]'};const s:Record<NonNullable<BadgeProps['size']>,string>={sm:'px-2 py-0.5 text-xs',md:'px-2.5 py-1 text-sm',lg:'px-3 py-1.5 text-base'};return <span ref={ref} className={clsx('inline-flex items-center font-medium rounded-full border border-[var(--color-border)]',v[variant],s[size],className)} {...props}/>});
+Badge.displayName='Badge';

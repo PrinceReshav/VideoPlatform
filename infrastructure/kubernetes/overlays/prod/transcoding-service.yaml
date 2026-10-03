@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transcoding-service
+  namespace: video-platform-prod
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: transcoding-service
+  template:
+    metadata:
+      labels:
+        app: transcoding-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      containers:
+      - name: transcoding-service
+        image: ${REGISTRY}/${IMAGE_NAME}-transcoding-service:latest
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: video-platform-config
+        - secretRef:
+            name: video-platform-secrets
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2000m"
+          limits:
+            memory: "8Gi"
+            cpu: "4000m"
+        volumeMounts:
+        - name: transcoding-temp
+          mountPath: /tmp/transcoding
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 120
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+      volumes:
+      - name: transcoding-temp
+        emptyDir:
+          sizeLimit: 50Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transcoding-service
+  namespace: video-platform-prod
+spec:
+  selector:
+    app: transcoding-service
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP

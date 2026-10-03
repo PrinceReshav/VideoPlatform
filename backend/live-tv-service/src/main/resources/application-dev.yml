@@ -1,0 +1,78 @@
+server:
+  port: 8092
+
+spring:
+  application:
+    name: live-tv-service
+
+  datasource:
+    url: jdbc:h2:mem:livetv_dev;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS live_tv_schema
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: live_tv_schema
+    open-in-view: false
+
+  flyway:
+    enabled: false
+
+  # Kafka is not required for local Live TV smoke testing.
+  kafka:
+    listener:
+      auto-startup: false
+
+  # Use local in-memory caching instead of Redis.
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=5m
+
+  # Do not initialize Redis repositories in the local profile.
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+# Redis is not required for the local Live TV smoke-test profile.
+management:
+  health:
+    redis:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,caches
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+# Local development must not depend on external IPTV-org availability during startup.
+livetv:
+  sync:
+    enabled: true
+    interval-hours: 6
+    interval-ms: 21600000
+    initial-delay-ms: 21600000
+
+  health-check:
+    enabled: true
+    interval-ms: 30000
+    timeout-seconds: 10
+    max-concurrent: 10
+
+logging:
+  level:
+    com.platform.livetv: INFO
+    org.hibernate.SQL: WARN

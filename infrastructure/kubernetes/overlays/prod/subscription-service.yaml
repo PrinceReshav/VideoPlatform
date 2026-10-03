@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscription-service
+  namespace: video-platform-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: subscription-service
+  template:
+    metadata:
+      labels:
+        app: subscription-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8087"
+    spec:
+      containers:
+      - name: subscription-service
+        image: ${REGISTRY}/${IMAGE_NAME}-subscription-service:latest
+        ports:
+        - containerPort: 8087
+        envFrom:
+        - configMapRef:
+            name: video-platform-config
+        - secretRef:
+            name: video-platform-secrets
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8087
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8087
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscription-service
+  namespace: video-platform-prod
+spec:
+  selector:
+    app: subscription-service
+  ports:
+  - port: 8087
+    targetPort: 8087
+  type: ClusterIP

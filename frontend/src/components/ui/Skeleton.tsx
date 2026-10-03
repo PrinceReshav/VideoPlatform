@@ -1,0 +1,3 @@
+import React, { forwardRef } from 'react'; import { clsx } from 'clsx';
+interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement>{variant?:'text'|'circular'|'rectangular';width?:string|number;height?:string|number}
+export const Skeleton=forwardRef<HTMLDivElement,SkeletonProps>(({className,variant='text',width,height,style,...props},ref)=>{const v={text:'h-4 w-full rounded',circular:'rounded-full',rectangular:'rounded-lg'} as const;return <div ref={ref} className={clsx('animate-pulse bg-[var(--color-bg-tertiary)]',v[variant],className)} style={{width,height,...style}} {...props}/>}); Skeleton.displayName='Skeleton';

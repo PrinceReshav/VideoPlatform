@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-creator-service
+  namespace: video-platform-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-creator-service
+  template:
+    metadata:
+      labels:
+        app: user-creator-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8082"
+    spec:
+      containers:
+      - name: user-creator-service
+        image: ${REGISTRY}/${IMAGE_NAME}-user-creator-service:latest
+        ports:
+        - containerPort: 8082
+        envFrom:
+        - configMapRef:
+            name: video-platform-config
+        - secretRef:
+            name: video-platform-secrets
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8082
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8082
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-creator-service
+  namespace: video-platform-prod
+spec:
+  selector:
+    app: user-creator-service
+  ports:
+  - port: 8082
+    targetPort: 8082
+  type: ClusterIP

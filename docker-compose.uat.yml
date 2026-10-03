@@ -1,0 +1,128 @@
+version: '3.8'
+
+# UAT overlay for docker-compose.yml.
+# Uses a dedicated PostgreSQL database/volume and the uat Spring profile.
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: ${UAT_POSTGRES_DB:-video_platform_uat}
+      POSTGRES_USER: ${UAT_POSTGRES_USER:-platform_uat}
+      POSTGRES_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+    volumes:
+      - postgres_uat_data:/var/lib/postgresql/data
+
+  api-gateway:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      AUTH_SERVICE_URL: http://auth-service:8081
+      USER_SERVICE_URL: http://user-creator-service:8082
+      VIDEO_SERVICE_URL: http://video-service:8083
+      UPLOAD_SERVICE_URL: http://upload-service:8084
+      SEARCH_SERVICE_URL: http://search-service:8085
+      ENGAGEMENT_SERVICE_URL: http://engagement-service:8086
+      SUBSCRIPTION_SERVICE_URL: http://subscription-service:8087
+      PLAYLIST_SERVICE_URL: http://playlist-service:8088
+      NOTIFICATION_SERVICE_URL: http://notification-service:8089
+      ANALYTICS_SERVICE_URL: http://analytics-service:8090
+      MODERATION_SERVICE_URL: http://moderation-service:8091
+      LIVE_TV_SERVICE_URL: http://live-tv-service:8092
+
+  auth-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=auth_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  user-creator-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=user_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  video-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=video_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  upload-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=upload_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  engagement-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=engagement_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  subscription-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=subscription_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  playlist-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=playlist_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  notification-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=notification_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  analytics-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=analytics_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  moderation-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=moderation_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  search-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+
+  transcoding-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=video_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  live-tv-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=live_tv_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SERVER_PORT: 8092
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus,caches"
+
+volumes:
+  postgres_uat_data:

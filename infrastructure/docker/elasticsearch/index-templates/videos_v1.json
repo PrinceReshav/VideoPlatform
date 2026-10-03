@@ -1,0 +1,186 @@
+{
+  "index_patterns": ["videos_v1"],
+  "template": {
+    "settings": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "5s",
+      "max_result_window": 10000,
+      "analysis": {
+        "analyzer": {
+          "video_analyzer": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase", "asciifolding", "video_stop", "video_stemmer"],
+            "char_filter": ["html_strip"]
+          },
+          "video_search_analyzer": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase", "asciifolding", "video_stop", "video_synonyms"],
+            "char_filter": ["html_strip"]
+          },
+          "edge_ngram_analyzer": {
+            "type": "custom",
+            "tokenizer": "edge_ngram_tokenizer",
+            "filter": ["lowercase", "asciifolding"],
+            "char_filter": ["html_strip"]
+          },
+          "keyword_analyzer": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": ["lowercase", "asciifolding"]
+          }
+        },
+        "tokenizer": {
+          "edge_ngram_tokenizer": {
+            "type": "edge_ngram",
+            "min_gram": 2,
+            "max_gram": 15,
+            "token_chars": ["letter", "digit"]
+          }
+        },
+        "filter": {
+          "video_stop": {
+            "type": "stop",
+            "stopwords": "_english_"
+          },
+          "video_stemmer": {
+            "type": "stemmer",
+            "language": "english"
+          },
+          "video_synonyms": {
+            "type": "synonym_graph",
+            "synonyms_path": "synonyms/video_synonyms.txt",
+            "updateable": true
+          }
+        },
+        "char_filter": {
+          "html_strip": {
+            "type": "html_strip"
+          }
+        }
+      }
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "videoId": {
+          "type": "keyword"
+        },
+        "title": {
+          "type": "text",
+          "analyzer": "video_analyzer",
+          "search_analyzer": "video_search_analyzer",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            },
+            "suggest": {
+              "type": "completion",
+              "analyzer": "simple",
+              "preserve_separators": true,
+              "preserve_position_increments": true,
+              "max_input_length": 50
+            },
+            "edge_ngram": {
+              "type": "text",
+              "analyzer": "edge_ngram_analyzer",
+              "search_analyzer": "keyword_analyzer"
+            }
+          }
+        },
+        "description": {
+          "type": "text",
+          "analyzer": "video_analyzer",
+          "search_analyzer": "video_search_analyzer"
+        },
+        "creatorId": {
+          "type": "keyword"
+        },
+        "channelId": {
+          "type": "keyword"
+        },
+        "channelName": {
+          "type": "text",
+          "analyzer": "video_analyzer",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            },
+            "suggest": {
+              "type": "completion",
+              "analyzer": "simple",
+              "preserve_separators": true,
+              "preserve_position_increments": true,
+              "max_input_length": 50
+            }
+          }
+        },
+        "tags": {
+          "type": "keyword"
+        },
+        "genreId": {
+          "type": "keyword"
+        },
+        "genreName": {
+          "type": "keyword"
+        },
+        "categoryId": {
+          "type": "keyword"
+        },
+        "categoryName": {
+          "type": "keyword"
+        },
+        "languageId": {
+          "type": "keyword"
+        },
+        "languageName": {
+          "type": "keyword"
+        },
+        "durationSeconds": {
+          "type": "integer"
+        },
+        "viewCount": {
+          "type": "long"
+        },
+        "likeCount": {
+          "type": "integer"
+        },
+        "commentCount": {
+          "type": "integer"
+        },
+        "publishedAt": {
+          "type": "date",
+          "format": "strict_date_optional_time||epoch_millis"
+        },
+        "thumbnailUrl": {
+          "type": "keyword"
+        },
+        "visibility": {
+          "type": "keyword"
+        },
+        "processingState": {
+          "type": "keyword"
+        },
+        "isPublished": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "date",
+          "format": "strict_date_optional_time||epoch_millis"
+        },
+        "updatedAt": {
+          "type": "date",
+          "format": "strict_date_optional_time||epoch_millis"
+        }
+      }
+    }
+  },
+  "priority": 100,
+  "version": 1,
+  "_meta": {
+    "description": "Video search index template for video-platform",
+    "created": "2024-01-01"
+  }
+}

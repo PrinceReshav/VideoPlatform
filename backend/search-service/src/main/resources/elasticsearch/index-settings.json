@@ -1,0 +1,76 @@
+{
+  "analysis": {
+    "analyzer": {
+      "video_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "asciifolding",
+          "video_stop",
+          "video_stemmer"
+        ],
+        "char_filter": [
+          "html_strip"
+        ]
+      },
+      "video_search_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "asciifolding",
+          "video_stop"
+        ],
+        "char_filter": [
+          "html_strip"
+        ]
+      },
+      "edge_ngram_analyzer": {
+        "type": "custom",
+        "tokenizer": "edge_ngram_tokenizer",
+        "filter": [
+          "lowercase",
+          "asciifolding"
+        ],
+        "char_filter": [
+          "html_strip"
+        ]
+      },
+      "keyword_analyzer": {
+        "type": "custom",
+        "tokenizer": "keyword",
+        "filter": [
+          "lowercase",
+          "asciifolding"
+        ]
+      }
+    },
+    "tokenizer": {
+      "edge_ngram_tokenizer": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 15,
+        "token_chars": [
+          "letter",
+          "digit"
+        ]
+      }
+    },
+    "filter": {
+      "video_stop": {
+        "type": "stop",
+        "stopwords": "_english_"
+      },
+      "video_stemmer": {
+        "type": "stemmer",
+        "language": "english"
+      }
+    },
+    "char_filter": {
+      "html_strip": {
+        "type": "html_strip"
+      }
+    }
+  }
+}

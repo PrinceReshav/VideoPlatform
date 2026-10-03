@@ -1,0 +1,92 @@
+server:
+  port: 8092
+
+spring:
+  application:
+    name: live-tv-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/video_platform?currentSchema=live_tv_schema}
+    username: ${SPRING_DATASOURCE_USERNAME:platform}
+    password: ${SPRING_DATASOURCE_PASSWORD:platform_dev_password}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: live_tv_schema
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: live-tv-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.platform.*"
+  redis:
+    host: ${SPRING_REDIS_HOST:localhost}
+    port: ${SPRING_REDIS_PORT:6379}
+    timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=5m
+
+# Live TV specific configuration
+livetv:
+  iptv-org:
+    channels-url: https://iptv-org.github.io/api/channels.json
+    categories-url: https://iptv-org.github.io/api/categories.json
+    countries-url: https://iptv-org.github.io/api/countries.json
+    epg-url: https://raw.githubusercontent.com/iptv-org/epg/master/epg.xml.gz
+    streams-url: https://iptv-org.github.io/api/streams.json
+    feeds-url: https://iptv-org.github.io/api/feeds.json
+    logos-url: https://iptv-org.github.io/api/logos.json
+    languages-url: https://iptv-org.github.io/api/languages.json
+  sync:
+    enabled: true
+    interval-hours: 6
+    interval-ms: 21600000
+    initial-delay-ms: 21600000
+  health-check:
+    enabled: true
+    interval-minutes: 30
+    interval-ms: 1800000
+    timeout-seconds: 10
+    max-concurrent: 50
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,caches
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+logging:
+  level:
+    com.platform.livetv: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: DEBUG

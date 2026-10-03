@@ -1,0 +1,56 @@
+# Video Platform Synonyms
+# Format: term1,term2,term3 => term1,term2,term3 (bidirectional)
+# Or: term1,term2 => term3 (unidirectional)
+
+# Common video synonyms
+video,film,movie,clip
+tutorial,guide,howto,walkthrough
+review,critique,analysis,opinion
+vlog,video blog,daily vlog
+stream,livestream,live stream
+short,shorts,reels,tiktok
+music video,mv,official video
+documentary,doc,docu
+animation,animated,cartoon
+gaming,gameplay,walkthrough,playthrough
+tech,technology,programming,coding
+education,educational,learning,course
+devotional,bhakti,spiritual,prayer,worship
+bhakti,devotional,kirtan,bhajan,aarti
+motivational,inspirational,inspiration,motivation
+comedy,funny,humor,jokes
+news,breaking news,current affairs
+sports,fitness,workout,exercise
+travel,vlog,travel vlog,adventure
+cooking,recipe,food,culinary
+asmr,relaxation,relaxing,sleep
+podcast,audio show,talk show
+interview,conversation,discussion
+unboxing,review,first look
+reaction,react,response
+challenge,trend,viral
+diy,craft,how to make
+beauty,makeup,skincare,fashion
+finance,money,investing,crypto
+business,entrepreneurship,startup
+health,wellness,medical,doctor
+science,physics,chemistry,biology
+history,historical,past
+philosophy,psychology,thinking
+art,drawing,painting,creative
+music,song,cover,performance
+dance,choreography,performance
+kids,children,family,parenting
+pets,animals,cats,dogs
+cars,automotive,vehicles,driving
+technology,tech,gadgets,review
+programming,coding,software,development
+web development,frontend,backend,fullstack
+mobile,android,ios,app
+ai,artificial intelligence,machine learning,ml
+data science,analytics,big data
+cloud,devops,aws,azure,gcp
+security,cybersecurity,hacking
+blockchain,crypto,web3,nft
+vr,ar,metaverse,virtual reality
+robotics,automation,iot

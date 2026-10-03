@@ -1,0 +1,158 @@
+{
+  "topics": [
+    {
+      "name": "video.uploaded.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 604800000,
+        "segment.bytes": 1073741824
+      }
+    },
+    {
+      "name": "video.processing.started.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 604800000
+      }
+    },
+    {
+      "name": "video.processing.progress.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 86400000
+      }
+    },
+    {
+      "name": "video.processing.completed.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 604800000
+      }
+    },
+    {
+      "name": "video.processing.failed.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "video.published.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "video.unpublished.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "video.deleted.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "video.viewed.v1",
+      "partitions": 12,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 86400000
+      }
+    },
+    {
+      "name": "video.liked.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "comment.created.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "subscription.created.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "subscription.deleted.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "notification.requested.v1",
+      "partitions": 6,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 604800000
+      }
+    },
+    {
+      "name": "video.uploaded.v1.dlq",
+      "partitions": 1,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "video.processing.completed.v1.dlq",
+      "partitions": 1,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    },
+    {
+      "name": "video.published.v1.dlq",
+      "partitions": 1,
+      "replicationFactor": 1,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 2592000000
+      }
+    }
+  ]
+}

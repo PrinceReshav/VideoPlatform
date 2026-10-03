@@ -1,0 +1,8 @@
+spring:
+  config:
+    activate:
+      on-profile: uat
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST:http://localhost:9200}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}

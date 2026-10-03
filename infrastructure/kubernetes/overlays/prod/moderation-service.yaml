@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moderation-service
+  namespace: video-platform-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: moderation-service
+  template:
+    metadata:
+      labels:
+        app: moderation-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8091"
+    spec:
+      containers:
+      - name: moderation-service
+        image: ${REGISTRY}/${IMAGE_NAME}-moderation-service:latest
+        ports:
+        - containerPort: 8091
+        envFrom:
+        - configMapRef:
+            name: video-platform-config
+        - secretRef:
+            name: video-platform-secrets
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8091
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8091
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: moderation-service
+  namespace: video-platform-prod
+spec:
+  selector:
+    app: moderation-service
+  ports:
+  - port: 8091
+    targetPort: 8091
+  type: ClusterIP

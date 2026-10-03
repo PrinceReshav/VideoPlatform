@@ -1,0 +1,90 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: video-platform-prod
+
+resources:
+- ../../base/namespace.yaml
+- ../../base/configmap-secret.yaml
+- api-gateway.yaml
+- auth-service.yaml
+- user-creator-service.yaml
+- video-service.yaml
+- upload-service.yaml
+- transcoding-service.yaml
+- search-service.yaml
+- engagement-service.yaml
+- subscription-service.yaml
+- playlist-service.yaml
+- notification-service.yaml
+- analytics-service.yaml
+- moderation-service.yaml
+- frontend.yaml
+
+images:
+- name: ${REGISTRY}/${IMAGE_NAME}-api-gateway
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-auth-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-user-creator-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-video-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-upload-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-transcoding-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-search-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-engagement-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-subscription-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-playlist-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-notification-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-analytics-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-moderation-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-frontend
+  newTag: latest
+
+replicas:
+- name: api-gateway
+  count: 3
+- name: auth-service
+  count: 2
+- name: user-creator-service
+  count: 2
+- name: video-service
+  count: 3
+- name: upload-service
+  count: 3
+- name: transcoding-service
+  count: 5
+- name: search-service
+  count: 2
+- name: engagement-service
+  count: 2
+- name: subscription-service
+  count: 2
+- name: playlist-service
+  count: 2
+- name: notification-service
+  count: 2
+- name: analytics-service
+  count: 2
+- name: moderation-service
+  count: 2
+- name: frontend
+  count: 3
+
+commonLabels:
+  environment: production
+  platform: video-platform
+
+commonAnnotations:
+  managed-by: kustomize
+  version: "1.0.0"

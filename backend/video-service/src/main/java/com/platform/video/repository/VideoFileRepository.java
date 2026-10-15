@@ -19,6 +19,8 @@ public interface VideoFileRepository extends JpaRepository<VideoFile, UUID> {
 
     List<VideoFile> findByVideoIdAndFileType(UUID videoId, com.platform.common.entity.FileType fileType);
 
+    List<VideoFile> findByVideoIdAndFileTypeIn(UUID videoId, List<com.platform.common.entity.FileType> fileTypes);
+
     @Query("SELECT vf FROM VideoFile vf WHERE vf.videoId = :videoId AND vf.fileType = 'HLS_MANIFEST' AND vf.master = true")
     Optional<VideoFile> findMasterManifest(@Param("videoId") UUID videoId);
 

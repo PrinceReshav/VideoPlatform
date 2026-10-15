@@ -42,4 +42,31 @@ public class UpdateCreatorProfileRequest {
     private String avatarUrl;
 
     private String bannerUrl;
+
+    /** Enhanced creator profile features for Feature 15: Creator Channels/Profiles */
+    private Boolean isListed;
+    private Boolean allowsFanFunding;
+    private Boolean allowsMerchandise;
+    private Boolean allowsSponsorships;
+    private Boolean allowsAffiliateLinks;
+    private String defaultMaturityRating;
+    private Boolean showSubscriberCount;
+    private String creatorKeywords;
+    private String linkedinUrl;
+    private String twitterHandle;
+    private String instagramHandle;
+    private String tiktokHandle;
+    private String discordUrl;
+    private String patreonUrl;
+    private String koFiUrl;
+    private String buyMeCoffeeUrl;
+    private Boolean openToCollaborations;
+    private Boolean openToSponsorships;
+    private UUID primaryLanguageId;
+    private String secondaryLanguages;
+    private String contentNiche;
+    private String uploadSchedule;
+    private Boolean emailNotificationsEnabled;
+    private Boolean allowContentIdMatching;
+    private Boolean allowAutomatedClaims;
 }

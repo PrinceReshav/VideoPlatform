@@ -9,6 +9,20 @@ public class BusinessException extends RuntimeException {
     private final HttpStatus httpStatus;
     private final Object[] args;
 
+    public BusinessException(String code, String message) {
+        this(code, defaultHttpStatus(code), message);
+    }
+
+    private static HttpStatus defaultHttpStatus(String code) {
+        if ("FORBIDDEN".equals(code) || "AUTH_ACCESS_DENIED".equals(code)) {
+            return HttpStatus.FORBIDDEN;
+        }
+        if ("NOT_FOUND".equals(code) || "RESOURCE_NOT_FOUND".equals(code)) {
+            return HttpStatus.NOT_FOUND;
+        }
+        return HttpStatus.BAD_REQUEST;
+    }
+
     public BusinessException(String code, HttpStatus httpStatus, String message) {
         super(message);
         this.code = code;

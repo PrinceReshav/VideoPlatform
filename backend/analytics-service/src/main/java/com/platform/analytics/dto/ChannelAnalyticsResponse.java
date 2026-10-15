@@ -18,4 +18,14 @@ public class ChannelAnalyticsResponse {
     private String channelName;
     private ChannelAnalyticsSummary summary;
     private List<DailyChannelAnalytics> dailyData;
+
+    // Additional fields for comprehensive analytics
+    private LocalDate periodStart;
+    private LocalDate periodEnd;
+    private String periodType; // DAILY, WEEKLY, MONTHLY, CUSTOM
+
+    // Comparative analytics
+    private ChannelAnalyticsSummary previousPeriodSummary;
+    private Double viewChangePercentage;
+    private Double subscriberChangePercentage;
 }

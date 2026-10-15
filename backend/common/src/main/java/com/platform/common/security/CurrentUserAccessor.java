@@ -36,9 +36,21 @@ public class CurrentUserAccessor {
     }
 
     public boolean hasRole(PlatformUserDetails.Role role) {
-        return getCurrentUser()
+        return role != null && getCurrentUser()
                 .map(u -> u.getRoles().contains(role))
                 .orElse(false);
+    }
+
+    /** Compatibility helper for service checks and SpEL-adjacent code that uses role names. */
+    public boolean hasRole(String roleName) {
+        if (roleName == null || roleName.isBlank()) {
+            return false;
+        }
+        try {
+            return hasRole(PlatformUserDetails.Role.valueOf(roleName.trim().toUpperCase(java.util.Locale.ROOT)));
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 
     public boolean isAdmin() {

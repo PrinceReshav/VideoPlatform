@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Video, BarChart2, Upload, Settings, LogOut, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Home, Video, BarChart2, Upload, Settings, LogOut, Sun, Moon, ChevronDown, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
@@ -17,6 +17,7 @@ interface CreatorSidebarProps {
 
 const creatorNavigation = [
   { name: 'Dashboard', href: '/creator', icon: Home },
+  { name: 'Creator-Studio', href: '/creator-studio', icon: Sparkles },
   { name: 'My Videos', href: '/creator/videos', icon: Video },
   { name: 'Upload', href: '/creator/upload', icon: Upload },
   { name: 'Analytics', href: '/creator/analytics', icon: BarChart2 },

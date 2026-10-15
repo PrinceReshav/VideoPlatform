@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  main:
+    web-application-type: reactive
   application:
     name: api-gateway
   profiles:
@@ -35,10 +37,31 @@ spring:
         - id: user-creator-service
           uri: ${USER_SERVICE_URL:http://localhost:8082}
           predicates:
-            - "Path=/api/v1/users/**,/api/v1/creators/**,/api/v1/channels/**,/api/v1/categories/**,/api/v1/genres/**,/api/v1/languages/**"
+            - "Path=/api/v1/users/**,/api/v1/creators/**,/api/v1/channels/**,/api/v1/categories/**,/api/v1/genres/**,/api/v1/languages/**,/api/v1/achievements/**,/api/v1/user-relationships/**,/api/v1/verification/**"
         - id: video-service
           uri: ${VIDEO_SERVICE_URL:http://localhost:8083}
           predicates: [Path=/api/v1/videos/**]
+        - id: video-version-service
+          uri: ${VIDEO_SERVICE_URL:http://localhost:8083}
+          predicates: [Path=/api/v1/video-versions/**]
+        - id: live-stream-service
+          uri: ${VIDEO_SERVICE_URL:http://localhost:8083}
+          predicates: [Path=/api/v1/live-streams/**]
+        - id: live-chat-service
+          uri: ${VIDEO_SERVICE_URL:http://localhost:8083}
+          predicates: [Path=/api/v1/live-chat/**]
+        - id: offline-download-service
+          uri: ${VIDEO_SERVICE_URL:http://localhost:8083}
+          predicates: [Path=/api/v1/offline-downloads/**]
+        - id: trending-service
+          uri: ${VIDEO_SERVICE_URL:http://localhost:8083}
+          predicates: [Path=/api/v1/trending/**]
+        - id: abuse-report-service
+          uri: ${VIDEO_SERVICE_URL:http://localhost:8083}
+          predicates: [Path=/api/v1/abuse-reports/**]
+        - id: video-operations-service
+          uri: ${VIDEO_SERVICE_URL:http://localhost:8083}
+          predicates: [Path=/api/v1/operations/**]
         - id: upload-service
           uri: ${UPLOAD_SERVICE_URL:http://localhost:8084}
           predicates: [Path=/api/v1/uploads/**]
@@ -48,6 +71,12 @@ spring:
         - id: engagement-service
           uri: ${ENGAGEMENT_SERVICE_URL:http://localhost:8086}
           predicates: [Path=/api/v1/engagement/**]
+        - id: saved-video-service
+          uri: ${ENGAGEMENT_SERVICE_URL:http://localhost:8086}
+          predicates: [Path=/api/v1/saved-videos/**]
+        - id: recommendation-service
+          uri: ${ENGAGEMENT_SERVICE_URL:http://localhost:8086}
+          predicates: [Path=/api/v1/recommendations/**]
         - id: subscription-service
           uri: ${SUBSCRIPTION_SERVICE_URL:http://localhost:8087}
           predicates: [Path=/api/v1/subscriptions/**]
@@ -57,6 +86,10 @@ spring:
         - id: notification-service
           uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8089}
           predicates: [Path=/api/v1/notifications/**]
+        - id: creator-studio-service
+          uri: ${CREATOR_STUDIO_SERVICE_URL:http://localhost:8094}
+          predicates:
+            - "Path=/api/v1/creator-studios/**,/api/v1/studio-content/**,/api/v1/studio-invitations/**,/api/v1/studio-memberships/**,/api/v1/studio-live-sessions/**,/api/v1/comment-credits/**"
         - id: analytics-service
           uri: ${ANALYTICS_SERVICE_URL:http://localhost:8090}
           predicates: [Path=/api/v1/analytics/**]

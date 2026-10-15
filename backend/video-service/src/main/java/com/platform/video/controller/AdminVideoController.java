@@ -2,6 +2,7 @@ package com.platform.video.controller;
 
 import com.platform.common.dto.PageResponse;
 import com.platform.common.entity.Video;
+import com.platform.common.security.CurrentUserAccessor;
 import com.platform.video.dto.VideoResponse;
 import com.platform.video.repository.VideoRepository;
 import com.platform.video.service.VideoService;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class AdminVideoController {
     private final VideoRepository repository;
     private final VideoService videoService;
+    private final CurrentUserAccessor currentUserAccessor;
 
     @GetMapping
     public ResponseEntity<PageResponse<VideoResponse>> getVideos(
@@ -43,7 +45,7 @@ public class AdminVideoController {
     @PostMapping("/{id}/block")
     public ResponseEntity<Void> block(@PathVariable UUID id, @RequestBody Map<String,String> body) {
         Video video = repository.findById(id).orElseThrow();
-        video.block(UUID.randomUUID(), body.getOrDefault("reason", "Blocked by administrator"));
+        video.block(currentUserAccessor.getCurrentUserId(), body.getOrDefault("reason", "Blocked by administrator"));
         repository.save(video);
         return ResponseEntity.ok().build();
     }

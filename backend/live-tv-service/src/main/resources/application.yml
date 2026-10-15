@@ -37,15 +37,16 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.platform.*"
-  redis:
-    host: ${SPRING_REDIS_HOST:localhost}
-    port: ${SPRING_REDIS_PORT:6379}
-    timeout: 5000ms
-    lettuce:
-      pool:
-        max-active: 20
-        max-idle: 10
-        min-idle: 5
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
   cache:
     type: caffeine
     caffeine:
@@ -67,6 +68,12 @@ livetv:
     interval-hours: 6
     interval-ms: 21600000
     initial-delay-ms: 21600000
+  youtube:
+    enabled: ${LIVETV_YOUTUBE_ENABLED:true}
+    api-key: ${YOUTUBE_DATA_API_KEY:}
+    cache-seconds: ${LIVETV_YOUTUBE_CACHE_SECONDS:300}
+    max-results: ${LIVETV_YOUTUBE_MAX_RESULTS:10}
+
   health-check:
     enabled: true
     interval-minutes: 30

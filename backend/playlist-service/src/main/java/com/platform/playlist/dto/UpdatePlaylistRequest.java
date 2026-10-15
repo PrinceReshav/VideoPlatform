@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * DTO for updating playlists (Feature 25: Advanced Playlists)
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -22,4 +25,13 @@ public class UpdatePlaylistRequest {
     private String description;
 
     private Playlist.Visibility visibility;
+
+    /** Whether this is a collaborative playlist (multiple users can edit) */
+    private Boolean isCollaborative;
+
+    /** Whether auto-add based on rules is enabled */
+    private Boolean autoAddEnabled;
+
+    /** Rules for auto-adding videos (JSON format) */
+    private String autoAddRules;
 }

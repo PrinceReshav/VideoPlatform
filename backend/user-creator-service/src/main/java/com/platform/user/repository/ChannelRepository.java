@@ -1,3 +1,4 @@
+
 package com.platform.user.repository;
 
 import com.platform.user.entity.Channel;
@@ -23,20 +24,41 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
 
     boolean existsBySlug(String slug);
 
+    boolean existsBySlugAndIdNot(String slug, UUID id);
+
     boolean existsByCustomUrl(String customUrl);
 
     boolean existsByCreatorProfileId(UUID creatorProfileId);
 
     boolean existsByName(String name);
 
-    @Query("SELECT c FROM Channel c WHERE c.active = true AND c.deleted = false AND c.suspended = false")
+    @Query("""
+        SELECT c FROM Channel c
+        WHERE c.active = true
+          AND c.deleted = false
+          AND c.suspended = false
+        """)
     List<Channel> findActiveChannels();
 
-    Page<Channel> findByActiveTrueAndDeletedFalseAndSuspendedFalse(Pageable pageable);
+    Page<Channel> findByActiveTrueAndDeletedFalseAndSuspendedFalse(
+            Pageable pageable
+    );
 
-    @Query("SELECT c FROM Channel c WHERE c.categoryId = :categoryId AND c.active = true AND c.deleted = false AND c.suspended = false")
+    @Query("""
+        SELECT c FROM Channel c
+        WHERE c.category.id = :categoryId
+          AND c.active = true
+          AND c.deleted = false
+          AND c.suspended = false
+        """)
     List<Channel> findByCategory(@Param("categoryId") UUID categoryId);
 
-    @Query("SELECT c FROM Channel c WHERE c.verified = true AND c.active = true AND c.deleted = false AND c.suspended = false")
+    @Query("""
+        SELECT c FROM Channel c
+        WHERE c.verified = true
+          AND c.active = true
+          AND c.deleted = false
+          AND c.suspended = false
+        """)
     List<Channel> findVerifiedChannels();
 }

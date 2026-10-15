@@ -9,13 +9,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "refresh_tokens", schema = "auth_schema",
-        indexes = {
-                @Index(name = "idx_refresh_tokens_user_id", columnList = "user_id"),
-                @Index(name = "idx_refresh_tokens_token_hash", columnList = "token_hash"),
-                @Index(name = "idx_refresh_tokens_expires_at", columnList = "expires_at"),
-                @Index(name = "idx_refresh_tokens_revoked", columnList = "revoked")
-        })
+@Table(name = "refresh_tokens", schema = "auth_schema")
 @Getter
 @Setter
 public class RefreshToken extends Auditable {

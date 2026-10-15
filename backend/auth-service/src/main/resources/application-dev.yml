@@ -1,13 +1,23 @@
-﻿spring:
+
+spring:
   config:
     activate:
       on-profile: dev
 
+  application:
+    name: auth-service
+
   datasource:
-    url: jdbc:h2:tcp://localhost:9123/video-platform-dev;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS AUTH_SCHEMA\;CREATE SCHEMA IF NOT EXISTS USER_SCHEMA\;CREATE SCHEMA IF NOT EXISTS VIDEO_SCHEMA\;CREATE SCHEMA IF NOT EXISTS UPLOAD_SCHEMA\;CREATE SCHEMA IF NOT EXISTS ENGAGEMENT_SCHEMA\;CREATE SCHEMA IF NOT EXISTS SUBSCRIPTION_SCHEMA\;CREATE SCHEMA IF NOT EXISTS PLAYLIST_SCHEMA\;CREATE SCHEMA IF NOT EXISTS NOTIFICATION_SCHEMA\;CREATE SCHEMA IF NOT EXISTS ANALYTICS_SCHEMA\;CREATE SCHEMA IF NOT EXISTS MODERATION_SCHEMA
+    url: 'jdbc:h2:mem:video_platform_dev;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS AUTH_SCHEMA\;CREATE SCHEMA IF NOT EXISTS USER_SCHEMA\;CREATE SCHEMA IF NOT EXISTS VIDEO_SCHEMA\;CREATE SCHEMA IF NOT EXISTS UPLOAD_SCHEMA\;CREATE SCHEMA IF NOT EXISTS ENGAGEMENT_SCHEMA\;CREATE SCHEMA IF NOT EXISTS SUBSCRIPTION_SCHEMA\;CREATE SCHEMA IF NOT EXISTS PLAYLIST_SCHEMA\;CREATE SCHEMA IF NOT EXISTS NOTIFICATION_SCHEMA\;CREATE SCHEMA IF NOT EXISTS ANALYTICS_SCHEMA\;CREATE SCHEMA IF NOT EXISTS MODERATION_SCHEMA\;CREATE SCHEMA IF NOT EXISTS COMMON_SCHEMA'
     username: sa
-    password:
+    password: ""
     driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
   jpa:
     hibernate:
@@ -25,10 +35,15 @@
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
-  redis:
-    host: ${SPRING_REDIS_HOST:localhost}
-    port: ${SPRING_REDIS_PORT:6379}
-    password: ${SPRING_REDIS_PASSWORD:}
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=5m
 
   servlet:
     multipart:
@@ -39,15 +54,22 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
-
+        include: health,info,metrics,prometheus,caches
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db,ping
+    health.redis:
+      enabled: false
 
 logging:
   level:
     com.platform: INFO
+    org.hibernate.SQL: WARN
 
 auth:
   require-email-verification: false

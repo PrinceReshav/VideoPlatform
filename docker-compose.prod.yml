@@ -126,6 +126,7 @@ services:
       SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       LIVE_TV_SERVICE_URL: http://live-tv-service:8092
+      CREATOR_STUDIO_SERVICE_URL: http://creator-studio-service:8094
       SERVER_PORT: 8080
       SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_'[/**]'.ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
       SPRING_CLOUD_GATEWAY_GLOBALCORS_CORS_CONFIGURATIONS_'[/**]'.ALLOWED_METHODS: "GET,POST,PUT,PATCH,DELETE,OPTIONS"
@@ -256,6 +257,9 @@ services:
     image: ${REGISTRY}/${IMAGE_NAME}-transcoding-service:latest
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform?currentSchema=video_schema
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
@@ -447,6 +451,39 @@ services:
       resources:
         limits:
           memory: 1G
+    restart: unless-stopped
+
+  creator-studio-service:
+    image: ${REGISTRY}/${IMAGE_NAME}-creator-studio-service:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      JWT_SECRET: ${JWT_SECRET}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform?currentSchema=creator_studio_schema
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
+      SERVER_PORT: 8094
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8094/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
     restart: unless-stopped
 
   live-tv-service:

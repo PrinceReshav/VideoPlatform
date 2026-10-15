@@ -3,16 +3,23 @@ package com.platform.livetv.controller;
 import com.platform.livetv.dto.CategoryStats;
 import com.platform.livetv.dto.CountryStats;
 import com.platform.livetv.entity.LiveChannel;
+import com.platform.livetv.entity.EpgProgram;
+import com.platform.livetv.repository.EpgProgramRepository;
 import com.platform.livetv.service.IptvOrgSyncService;
+import com.platform.livetv.service.YouTubeLiveFallbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.CacheControl;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -22,12 +29,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/live")
-@RequiredArgsConstructor
 @Tag(
         name = "Live TV",
         description = "Live TV channels from IPTV-org with EPG and health monitoring"
 )
 public class LiveTvController {
+
+
 
     private static final int DEFAULT_PAGE = 0;
     private static final int DEFAULT_PAGE_SIZE = 50;
@@ -45,6 +53,24 @@ public class LiveTvController {
     );
 
     private final IptvOrgSyncService liveTvService;
+    private final YouTubeLiveFallbackService youTubeLiveFallbackService;
+    private final EpgProgramRepository epgProgramRepository;
+
+    public LiveTvController(
+            IptvOrgSyncService liveTvService,
+            YouTubeLiveFallbackService youTubeLiveFallbackService,
+            EpgProgramRepository epgProgramRepository) {
+
+        this.liveTvService = liveTvService;
+        this.youTubeLiveFallbackService = youTubeLiveFallbackService;
+        this.epgProgramRepository = epgProgramRepository;
+    }
+
+    @GetMapping("/readiness")
+    @Operation(summary = "Get Live TV catalogue readiness")
+    public ResponseEntity<Map<String, Object>> getReadiness() {
+        return ResponseEntity.ok(liveTvService.getReadiness());
+    }
 
     @GetMapping("/channels")
     @Operation(summary = "Get live TV channels with filtering")
@@ -140,6 +166,7 @@ public class LiveTvController {
     }
 
     @PostMapping("/channels/{id}/favorite")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Toggle favorite status for a channel")
     public ResponseEntity<LiveChannel> toggleFavorite(
             @PathVariable("id") UUID id) {
@@ -148,6 +175,7 @@ public class LiveTvController {
     }
 
     @PostMapping("/channels/{id}/view")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Record a view for a channel")
     public ResponseEntity<LiveChannel> recordView(
             @PathVariable("id") UUID id) {
@@ -161,20 +189,118 @@ public class LiveTvController {
         return ResponseEntity.ok(liveTvService.getFeatured());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleUpstreamFailure(IllegalStateException ex) {
+        return ResponseEntity.status(org.springframework.http.HttpStatus.BAD_GATEWAY)
+                .body(Map.of(
+                        "error", "LIVE_STREAM_UPSTREAM_UNAVAILABLE",
+                        "message", ex.getMessage() == null ? "Live stream source unavailable" : ex.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleBadLiveRequest(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest()
+                .body(Map.of(
+                        "error", "INVALID_LIVE_STREAM_REQUEST",
+                        "message", ex.getMessage() == null ? "Invalid live stream request" : ex.getMessage()
+                ));
+    }
+
+    @GetMapping("/channels/{id}/stream-candidates")
+    @Operation(summary = "Get all indexed IPTV stream candidates for a channel")
+    public ResponseEntity<List<IptvOrgSyncService.StreamCandidateInfo>> streamCandidates(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(liveTvService.getStreamCandidateInfo(id));
+    }
+
+    @GetMapping("/channels/{id}/youtube-fallback")
+    @Operation(summary = "Find an official embeddable YouTube Live fallback")
+    public ResponseEntity<YouTubeLiveFallbackService.FallbackResponse> youtubeFallback(@PathVariable("id") UUID id) {
+        LiveChannel channel = liveTvService.getChannel(id).orElseThrow(() -> new IllegalArgumentException("Live channel not found"));
+        return ResponseEntity.ok(youTubeLiveFallbackService.findLive(channel));
+    }
+
+    @GetMapping("/channels/{id}/playback-diagnostic")
+    @Operation(summary = "Diagnose live playback and classify the result")
+    public ResponseEntity<IptvOrgSyncService.PlaybackDiagnostic> playbackDiagnostic(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(liveTvService.getPlaybackDiagnostic(id));
+    }
+
+    @GetMapping("/channels/{id}/stream.m3u8")
+    @Operation(summary = "Proxy a live HLS stream through the Live TV service")
+    public ResponseEntity<byte[]> proxyStream(
+            @PathVariable("id") UUID id,
+            @RequestParam(name = "url", required = false) String url) {
+
+        IptvOrgSyncService.StreamProxyResponse proxied = liveTvService.proxyStream(id, url);
+
+        MediaType mediaType;
+        try {
+            mediaType = MediaType.parseMediaType(proxied.contentType());
+        } catch (Exception ignored) {
+            mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        }
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .cacheControl(CacheControl.noStore())
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "*")
+                .body(proxied.body());
+    }
+
+    @GetMapping("/channels/{id}/logo")
+    @Operation(summary = "Serve an IPTV-org channel logo through the Live TV service")
+    public ResponseEntity<byte[]> getLogo(@PathVariable("id") UUID id) {
+        IptvOrgSyncService.LogoResponse logo = liveTvService.getLogo(id);
+        MediaType mediaType;
+        try {
+            mediaType = MediaType.parseMediaType(logo.contentType());
+        } catch (Exception ignored) {
+            mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        }
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .cacheControl(CacheControl.maxAge(java.time.Duration.ofHours(12)).cachePublic())
+                .header("Access-Control-Allow-Origin", "*")
+                .body(logo.body());
+    }
+
     @GetMapping("/channels/{id}/epg")
     @Operation(summary = "Get EPG data for a channel")
     public ResponseEntity<Map<String, Object>> getEpg(
             @PathVariable("id") UUID id,
             @RequestParam(name = "date", required = false) String date) {
 
+        LocalDate day;
+        try {
+            day = date == null || date.isBlank() ? LocalDate.now(ZoneOffset.UTC) : LocalDate.parse(date);
+        } catch (java.time.format.DateTimeParseException ex) {
+            throw new IllegalArgumentException("date must use ISO-8601 format yyyy-MM-dd");
+        }
+        Instant start = day.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant end = day.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+        List<EpgProgram> programs = epgProgramRepository.findForWindow(id, start, end);
         return ResponseEntity.ok(Map.of(
                 "channelId", id.toString(),
-                "date", date == null ? "" : date,
-                "programs", List.of()
+                "date", day.toString(),
+                "programs", programs.stream().map(p -> Map.of(
+                        "id", p.getId(),
+                        "title", p.getTitle(),
+                        "description", p.getDescription() == null ? "" : p.getDescription(),
+                        "startTime", p.getStartTime(),
+                        "endTime", p.getEndTime(),
+                        "category", p.getCategory() == null ? "" : p.getCategory(),
+                        "icon", p.getIcon() == null ? "" : p.getIcon(),
+                        "season", p.getSeason() == null ? 0 : p.getSeason(),
+                        "episode", p.getEpisode() == null ? 0 : p.getEpisode(),
+                        "episodeTitle", p.getEpisodeTitle() == null ? "" : p.getEpisodeTitle()
+                )).toList()
         ));
     }
 
     @PostMapping("/channels/{id}/check")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Manually trigger health check for a channel")
     public ResponseEntity<LiveChannel> checkChannel(
             @PathVariable("id") UUID id) {
@@ -191,6 +317,7 @@ public class LiveTvController {
     }
 
     @PostMapping("/health-check")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Manually trigger health check")
     public ResponseEntity<String> triggerHealthCheck() {
         liveTvService.healthCheckChannels();

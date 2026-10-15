@@ -13,7 +13,8 @@ import java.util.UUID;
         indexes = {
                 @Index(name = "idx_video_files_video", columnList = "video_id"),
                 @Index(name = "idx_video_files_type", columnList = "file_type"),
-                @Index(name = "idx_video_files_resolution", columnList = "resolution")
+                @Index(name = "idx_video_files_resolution", columnList = "resolution"),
+                @Index(name = "idx_video_files_language", columnList = "language_id")
         })
 @Getter
 @Setter
@@ -70,4 +71,7 @@ public class VideoFile extends Auditable {
     @Column(name = "is_master", nullable = false)
     private boolean master = false;
 
+    /** Language ID for dubbed audio files */
+    @Column(name = "language_id")
+    private UUID languageId;
 }

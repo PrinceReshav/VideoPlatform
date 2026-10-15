@@ -60,11 +60,24 @@ management:
 
 # Local development must not depend on external IPTV-org availability during startup.
 livetv:
+  iptv-org:
+    local-repo-path: ./iptv
+    local-streams-path: ./iptv/streams
+
+  playback:
+    browser-origin: ${LIVETV_BROWSER_ORIGIN:http://localhost:3000}
+
   sync:
     enabled: true
     interval-hours: 6
     interval-ms: 21600000
     initial-delay-ms: 21600000
+
+  youtube:
+    enabled: ${LIVETV_YOUTUBE_ENABLED:true}
+    api-key: ${YOUTUBE_DATA_API_KEY:}
+    cache-seconds: ${LIVETV_YOUTUBE_CACHE_SECONDS:300}
+    max-results: ${LIVETV_YOUTUBE_MAX_RESULTS:10}
 
   health-check:
     enabled: true

@@ -26,6 +26,7 @@ services:
       ANALYTICS_SERVICE_URL: http://analytics-service:8090
       MODERATION_SERVICE_URL: http://moderation-service:8091
       LIVE_TV_SERVICE_URL: http://live-tv-service:8092
+      CREATOR_STUDIO_SERVICE_URL: http://creator-studio-service:8094
 
   auth-service:
     environment:
@@ -108,6 +109,22 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=video_schema
       SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
       SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+
+  creator-studio-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: uat
+      JWT_SECRET: ${JWT_SECRET}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_platform_uat?currentSchema=creator_studio_schema
+      SPRING_DATASOURCE_USERNAME: ${UAT_POSTGRES_USER:-platform_uat}
+      SPRING_DATASOURCE_PASSWORD: ${UAT_POSTGRES_PASSWORD:-platform_uat_password}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SERVER_PORT: 8094
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
 
   live-tv-service:
     environment:

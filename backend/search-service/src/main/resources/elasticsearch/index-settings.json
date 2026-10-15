@@ -44,6 +44,31 @@
           "lowercase",
           "asciifolding"
         ]
+      },
+      "synonym_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "synonym",
+          "lowercase",
+          "asciifolding"
+        ]
+      },
+      "autocomplete_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "asciifolding"
+        ]
+      },
+      "autocomplete_search_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "asciifolding"
+        ]
       }
     },
     "tokenizer": {
@@ -65,6 +90,10 @@
       "video_stemmer": {
         "type": "stemmer",
         "language": "english"
+      },
+      "synonym": {
+        "type": "synonym",
+        "synonyms_path": "analysis/synonym.txt"
       }
     },
     "char_filter": {

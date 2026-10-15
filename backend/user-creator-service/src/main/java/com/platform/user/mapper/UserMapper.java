@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {})
+@Mapper(componentModel = "spring")
 public interface UserMapper {
 
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
@@ -58,46 +58,110 @@ public interface UserMapper {
     @Named("toCreatorProfileResponseWithDetails")
     @Mapping(target = "categoryId", source = "category.id")
     @Mapping(target = "categoryName", source = "category.name")
-    @Mapping(target = "genreIds", expression = "java(mapGenreIds(profile.getGenres()))")
-    @Mapping(target = "genreNames", expression = "java(mapGenreNames(profile.getGenres()))")
+    @Mapping(
+            target = "genreIds",
+            expression = "java(mapGenreIds(profile.getGenres()))"
+    )
+    @Mapping(
+            target = "genreNames",
+            expression = "java(mapGenreNames(profile.getGenres()))"
+    )
     @Mapping(target = "defaultLanguageId", source = "defaultLanguageId")
     @Mapping(target = "defaultLanguageName", ignore = true)
     @Mapping(target = "customUrl", ignore = true)
     @Mapping(target = "keywords", ignore = true)
     @Mapping(target = "country", ignore = true)
     @Mapping(target = "email", ignore = true)
-    CreatorProfileResponse toCreatorProfileResponseWithDetails(CreatorProfile profile);
+    CreatorProfileResponse toCreatorProfileResponseWithDetails(
+            CreatorProfile profile
+    );
 
+    @Mapping(target = "listed", source = "listed")
+    @Mapping(target = "allowsCommunity", source = "allowsCommunity")
+    @Mapping(target = "allowsMessaging", source = "allowsMessaging")
+    @Mapping(target = "defaultVideoPrivacy", source = "defaultVideoPrivacy")
+    @Mapping(target = "defaultLicense", source = "defaultLicense")
+    @Mapping(target = "showSubscriberCount", source = "showSubscriberCount")
+    @Mapping(target = "showRatingCounts", source = "showRatingCounts")
+    @Mapping(target = "verificationTier", source = "verificationTier")
+    @Mapping(target = "channelKeywords", source = "channelKeywords")
+    @Mapping(target = "adsenseAccountId", source = "adsenseAccountId")
+    @Mapping(target = "googleAnalyticsId", source = "googleAnalyticsId")
+    @Mapping(target = "trailerVideoId", source = "trailerVideoId")
+    @Mapping(target = "featuredChannels", source = "featuredChannels")
+    @Mapping(target = "featuredPlaylists", source = "featuredPlaylists")
+    @Mapping(target = "countryRestriction", source = "countryRestriction")
+    @Mapping(target = "ageRestriction", source = "ageRestriction")
+    @Mapping(target = "madeForKids", source = "madeForKids")
+    @Mapping(target = "autoChaptersEnabled", source = "autoChaptersEnabled")
+    @Mapping(target = "autoCaptionsEnabled", source = "autoCaptionsEnabled")
+    @Mapping(target = "defaultCommentSetting", source = "defaultCommentSetting")
     ChannelResponse toChannelResponse(Channel channel);
 
     @Named("toChannelResponseWithDetails")
     @Mapping(target = "categoryId", source = "category.id")
     @Mapping(target = "categoryName", source = "category.name")
-    @Mapping(target = "genreIds", expression = "java(mapGenreIds(channel.getGenres()))")
-    @Mapping(target = "genreNames", expression = "java(mapGenreNames(channel.getGenres()))")
+    @Mapping(
+            target = "genreIds",
+            expression = "java(mapGenreIds(channel.getGenres()))"
+    )
+    @Mapping(
+            target = "genreNames",
+            expression = "java(mapGenreNames(channel.getGenres()))"
+    )
     @Mapping(target = "defaultLanguageId", source = "defaultLanguageId")
     @Mapping(target = "defaultLanguageName", ignore = true)
     @Mapping(target = "customUrl", ignore = true)
     @Mapping(target = "keywords", ignore = true)
     @Mapping(target = "country", ignore = true)
     @Mapping(target = "email", ignore = true)
+    @Mapping(target = "listed", source = "listed")
+    @Mapping(target = "allowsCommunity", source = "allowsCommunity")
+    @Mapping(target = "allowsMessaging", source = "allowsMessaging")
+    @Mapping(target = "defaultVideoPrivacy", source = "defaultVideoPrivacy")
+    @Mapping(target = "defaultLicense", source = "defaultLicense")
+    @Mapping(target = "showSubscriberCount", source = "showSubscriberCount")
+    @Mapping(target = "showRatingCounts", source = "showRatingCounts")
+    @Mapping(target = "verificationTier", source = "verificationTier")
+    @Mapping(target = "channelKeywords", source = "channelKeywords")
+    @Mapping(target = "adsenseAccountId", source = "adsenseAccountId")
+    @Mapping(target = "googleAnalyticsId", source = "googleAnalyticsId")
+    @Mapping(target = "trailerVideoId", source = "trailerVideoId")
+    @Mapping(target = "featuredChannels", source = "featuredChannels")
+    @Mapping(target = "featuredPlaylists", source = "featuredPlaylists")
+    @Mapping(target = "countryRestriction", source = "countryRestriction")
+    @Mapping(target = "ageRestriction", source = "ageRestriction")
+    @Mapping(target = "madeForKids", source = "madeForKids")
+    @Mapping(target = "autoChaptersEnabled", source = "autoChaptersEnabled")
+    @Mapping(target = "autoCaptionsEnabled", source = "autoCaptionsEnabled")
+    @Mapping(target = "defaultCommentSetting", source = "defaultCommentSetting")
     ChannelResponse toChannelResponseWithDetails(Channel channel);
 
     @Named("mapGenreIds")
     default Set<UUID> mapGenreIds(Set<Genre> genres) {
-        if (genres == null) return Set.of();
-        return genres.stream().map(Genre::getId).collect(Collectors.toSet());
+        if (genres == null) {
+            return Set.of();
+        }
+
+        return genres.stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
     }
 
     @Named("mapGenreNames")
     default Set<String> mapGenreNames(Set<Genre> genres) {
-        if (genres == null) return Set.of();
-        return genres.stream().map(Genre::getName).collect(Collectors.toSet());
+        if (genres == null) {
+            return Set.of();
+        }
+
+        return genres.stream()
+                .map(Genre::getName)
+                .collect(Collectors.toSet());
     }
 
     @Named("getLanguageName")
     default String getLanguageName(UUID languageId) {
-        // This will be resolved at runtime via service lookup
+        // Language lookup requires a service-level implementation.
         return null;
     }
 }

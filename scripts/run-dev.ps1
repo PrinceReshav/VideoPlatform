@@ -9,6 +9,7 @@ $services = @(
   'video-service',
   'upload-service',
   'transcoding-service',
+  'live-tv-service',
   'search-service',
   'engagement-service',
   'subscription-service',

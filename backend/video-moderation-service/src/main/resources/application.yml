@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: video-moderation-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_GROUP_ID:video-moderation-service}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.platform.common.event,com.platform.common.dto,com.platform.moderationvideo.dto
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+server:
+  port: 8093
+
+moderation:
+  frame-sampling-fps: ${MODERATION_FRAME_SAMPLING_FPS:2.0}
+  max-sampled-frames: ${MODERATION_MAX_SAMPLED_FRAMES:600}
+  explicit-content-threshold: ${MODERATION_EXPLICIT_THRESHOLD:0.70}
+  enable-hog-person-detection: ${MODERATION_ENABLE_HOG:true}
+  enable-face-detection: ${MODERATION_ENABLE_FACE:true}
+  enable-skin-color-detection: ${MODERATION_ENABLE_SKIN:true}
+  skin-color-threshold: ${MODERATION_SKIN_THRESHOLD:0.30}
+  face-count-threshold: ${MODERATION_FACE_COUNT_THRESHOLD:3}
+  person-density-threshold: ${MODERATION_PERSON_DENSITY_THRESHOLD:0.40}
+  temporal-window-size: ${MODERATION_TEMPORAL_WINDOW:10}
+  temporal-smoothing-alpha: ${MODERATION_TEMPORAL_ALPHA:0.30}
+  perceptual-hashing-enabled: ${MODERATION_HASHING_ENABLED:true}
+  known-bad-content-threshold: ${MODERATION_KNOWN_BAD_THRESHOLD:0.85}
+  known-bad-hashes-file: ${MODERATION_KNOWN_BAD_HASHES_FILE:}
+  face-cascade-path: ${MODERATION_FACE_CASCADE_PATH:}
+  temp-dir: ${MODERATION_TEMP_DIR:${java.io.tmpdir}/video-moderation}
+  block-on-error: ${MODERATION_BLOCK_ON_ERROR:true}
+
+storage:
+  provider: minio
+  minio:
+    endpoint: ${MINIO_ENDPOINT:localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket-name: ${MINIO_BUCKET:videos}
+    secure: ${MINIO_SECURE:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.platform.moderationvideo: INFO
+    org.springframework.kafka: WARN
+    org.springframework.boot.autoconfigure: ERROR

@@ -56,6 +56,9 @@ export const VideoPlayer = forwardRef<
   ) => {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const hlsRef = useRef<Hls | null>(null);
+    const networkRecoveryAttemptsRef = useRef(0);
+    const mediaRecoveryAttemptsRef = useRef(0);
+    const retryTimerRef = useRef<number | null>(null);
 
     /*
      * Keep the latest callbacks without forcing the HLS instance
@@ -83,7 +86,18 @@ export const VideoPlayer = forwardRef<
     const [duration, setDuration] = useState(0);
     const [buffered, setBuffered] = useState(0);
     const [volume, setVolume] = useState(1);
-    const [isMuted, setIsMuted] = useState(initialMuted);
+    const [isMuted, setIsMuted] = useState(() => {
+      if (initialMuted) {
+        return true;
+      }
+
+      if (liveMode && typeof window !== 'undefined') {
+        return window.localStorage.getItem('videoplatform.liveTv.muted') === 'true';
+      }
+
+      return false;
+    });
+    const [autoplayNeedsUnmute, setAutoplayNeedsUnmute] = useState(false);
     const [playbackRate, setPlaybackRate] = useState(1);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isPictureInPicture, setIsPictureInPicture] =
@@ -160,7 +174,18 @@ export const VideoPlayer = forwardRef<
 
       video.muted = nextMuted;
       setIsMuted(nextMuted);
-    }, []);
+      setAutoplayNeedsUnmute(false);
+
+      if (liveMode && typeof window !== 'undefined') {
+        window.localStorage.setItem('videoplatform.liveTv.muted', String(nextMuted));
+      }
+
+      if (!nextMuted && video.paused) {
+        video.play().catch(() => {
+          // The browser may still require an explicit play gesture.
+        });
+      }
+    }, [liveMode]);
 
     /*
      * Volume.
@@ -190,8 +215,13 @@ export const VideoPlayer = forwardRef<
 
         setVolume(nextVolume);
         setIsMuted(video.muted);
+        setAutoplayNeedsUnmute(false);
+
+        if (liveMode && typeof window !== 'undefined') {
+          window.localStorage.setItem('videoplatform.liveTv.muted', String(video.muted));
+        }
       },
-      []
+      [liveMode]
     );
 
     /*
@@ -476,7 +506,7 @@ export const VideoPlayer = forwardRef<
       };
     }, []);
 
-    const isLikelyHlsSource = /(?:\.m3u8(?:$|[?#])|m3u8)/i.test(src);
+    const isLikelyHlsSource = /(?:\.m3u8(?:$|[?#])|m3u8|\/api\/v1\/live\/channels\/[^/]+\/stream)/i.test(src);
 
     /*
      * Initialize / reinitialize HLS or a native media source.
@@ -505,12 +535,19 @@ export const VideoPlayer = forwardRef<
        * Reset player state for the new channel/source.
        */
       setError(null);
+      networkRecoveryAttemptsRef.current = 0;
+      mediaRecoveryAttemptsRef.current = 0;
+      if (retryTimerRef.current !== null) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
       setCurrentTime(0);
       setDuration(0);
       setBuffered(0);
       setAvailableQualities([]);
       setQuality('auto');
       setIsPlaying(false);
+      setAutoplayNeedsUnmute(false);
 
       /*
        * CORS must be configured before attaching/loading
@@ -533,9 +570,14 @@ export const VideoPlayer = forwardRef<
           enableWorker: true,
           lowLatencyMode: true,
           backBufferLength: 30,
-          manifestLoadingMaxRetry: 3,
-          levelLoadingMaxRetry: 3,
-          fragLoadingMaxRetry: 3,
+          manifestLoadingMaxRetry: 8,
+          levelLoadingMaxRetry: 8,
+          fragLoadingMaxRetry: 8,
+          manifestLoadingRetryDelay: 1000,
+          levelLoadingRetryDelay: 1000,
+          fragLoadingRetryDelay: 750,
+          maxBufferLength: 30,
+          liveDurationInfinity: true,
         });
 
         hlsRef.current = hls;
@@ -553,6 +595,8 @@ export const VideoPlayer = forwardRef<
         hls.on(
           Hls.Events.MANIFEST_PARSED,
           (_event, data) => {
+            networkRecoveryAttemptsRef.current = 0;
+            mediaRecoveryAttemptsRef.current = 0;
             const heights = data.levels
               .map((level) => level.height)
               .filter(
@@ -578,11 +622,27 @@ export const VideoPlayer = forwardRef<
              * has been parsed.
              */
             if (autoPlay) {
-              video.play().catch(() => {
-                // Most browsers reject autoplay with sound. Retry muted so
-                // the live channel starts reliably; the user can unmute.
+              /*
+               * Prefer audible autoplay. If Chrome/Edge/Safari rejects it,
+               * fall back to muted playback rather than failing the channel.
+               * The user can then explicitly unmute; that gesture is accepted
+               * by browser autoplay policy and the preference is remembered
+               * for subsequent Live-TV channels.
+               */
+              video.muted = isMuted;
+              video.volume = volume;
+
+              video.play().then(() => {
+                setAutoplayNeedsUnmute(false);
+              }).catch(() => {
                 video.muted = true;
                 setIsMuted(true);
+                setAutoplayNeedsUnmute(true);
+
+                // Do not persist this fallback as a user preference. The browser
+                // rejected autoplay with sound for this session; the next channel
+                // should still get a fresh attempt with audio.
+
                 video.play().catch((playError: unknown) => {
                   const message = playError instanceof Error
                     ? playError.message
@@ -607,17 +667,50 @@ export const VideoPlayer = forwardRef<
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
                 /*
-                 * Attempt recovery from a fatal
-                 * network error.
+                 * Recover a small number of times with backoff. An unlimited
+                 * startLoad() loop can hammer an unavailable provider and makes
+                 * the player look frozen.
                  */
-                hls.startLoad();
+                if (networkRecoveryAttemptsRef.current < 30) {
+                  networkRecoveryAttemptsRef.current += 1;
+                  const delay = Math.min(10000, 750 * networkRecoveryAttemptsRef.current);
+                  if (retryTimerRef.current !== null) {
+                    window.clearTimeout(retryTimerRef.current);
+                  }
+                  retryTimerRef.current = window.setTimeout(() => {
+                    retryTimerRef.current = null;
+                    if (hlsRef.current === hls) {
+                      hls.startLoad(-1);
+                    }
+                  }, delay);
+                } else {
+                  // Live TV should remain in a recovery state rather than
+                  // permanently stopping because an upstream provider had a
+                  // transient outage. Keep retrying at a low frequency.
+                  networkRecoveryAttemptsRef.current = 0;
+                  if (retryTimerRef.current !== null) {
+                    window.clearTimeout(retryTimerRef.current);
+                  }
+                  retryTimerRef.current = window.setTimeout(() => {
+                    retryTimerRef.current = null;
+                    if (hlsRef.current === hls) {
+                      hls.stopLoad();
+                      hls.startLoad(-1);
+                    }
+                  }, 10000);
+                }
                 break;
 
               case Hls.ErrorTypes.MEDIA_ERROR:
-                /*
-                 * Attempt HLS media recovery.
-                 */
-                hls.recoverMediaError();
+                /* Recover media corruption repeatedly; Live TV has no VOD end state. */
+                if (mediaRecoveryAttemptsRef.current < 8) {
+                  mediaRecoveryAttemptsRef.current += 1;
+                  hls.recoverMediaError();
+                } else {
+                  mediaRecoveryAttemptsRef.current = 0;
+                  hls.stopLoad();
+                  hls.loadSource(src);
+                }
                 break;
 
               default: {
@@ -648,6 +741,10 @@ export const VideoPlayer = forwardRef<
 
         return () => {
           video.pause();
+          if (retryTimerRef.current !== null) {
+            window.clearTimeout(retryTimerRef.current);
+            retryTimerRef.current = null;
+          }
 
           hls.destroy();
 
@@ -1133,6 +1230,29 @@ export const VideoPlayer = forwardRef<
           className="w-full h-full object-contain"
           {...props}
         />
+
+        {autoplayNeedsUnmute && !error && (
+          <button
+            type="button"
+            className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/75 px-4 py-3 text-sm font-semibold text-white shadow-xl backdrop-blur-sm hover:bg-black/90"
+            onClick={() => {
+              const video = videoRef.current;
+              if (!video) return;
+              video.muted = false;
+              video.volume = Math.max(volume, 0.5);
+              setVolume(video.volume);
+              setIsMuted(false);
+              setAutoplayNeedsUnmute(false);
+              if (liveMode && typeof window !== 'undefined') {
+                window.localStorage.setItem('videoplatform.liveTv.muted', 'false');
+              }
+              video.play().catch(() => undefined);
+            }}
+            aria-label="Turn on live TV sound"
+          >
+            🔊 Click to unmute
+          </button>
+        )}
 
         {error && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-10">

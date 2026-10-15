@@ -1,5 +1,8 @@
 package com.platform.playlist.service;
 
+import com.platform.playlist.entity.PlaylistCollaborator;
+import com.platform.playlist.repository.PlaylistCollaboratorRepository;
+
 import com.platform.common.dto.ApiErrorCodes;
 import com.platform.common.dto.PageResponse;
 import com.platform.common.exception.BusinessException;
@@ -37,6 +40,7 @@ public class PlaylistService {
 
     private final PlaylistRepository playlistRepository;
     private final PlaylistItemRepository playlistItemRepository;
+    private final PlaylistCollaboratorRepository playlistCollaboratorRepository;
     private final CurrentUserAccessor currentUserAccessor;
     private final VideoRepository videoRepository;
 
@@ -49,6 +53,10 @@ public class PlaylistService {
         playlist.setName(request.getName());
         playlist.setDescription(request.getDescription());
         playlist.setVisibility(request.getVisibility());
+        playlist.setCollaborative(request.isCollaborative());
+        playlist.setAutoAddEnabled(request.isAutoAddEnabled());
+        playlist.setAutoAddRules(request.getAutoAddRules());
+        playlist.setLastModifiedAt(Instant.now());
         playlist = playlistRepository.save(playlist);
 
         log.info("Created playlist: {} ({})", playlist.getName(), playlist.getId());
@@ -78,6 +86,10 @@ public class PlaylistService {
         if (request.getName() != null) playlist.setName(request.getName());
         if (request.getDescription() != null) playlist.setDescription(request.getDescription());
         if (request.getVisibility() != null) playlist.setVisibility(request.getVisibility());
+        if (request.getIsCollaborative() != null) playlist.setCollaborative(request.getIsCollaborative());
+        if (request.getAutoAddEnabled() != null) playlist.setAutoAddEnabled(request.getAutoAddEnabled());
+        if (request.getAutoAddRules() != null) playlist.setAutoAddRules(request.getAutoAddRules());
+        playlist.setLastModifiedAt(Instant.now());
 
         playlist = playlistRepository.save(playlist);
         log.info("Updated playlist: {}", playlistId);
@@ -270,11 +282,145 @@ public class PlaylistService {
                 .name(playlist.getName())
                 .description(playlist.getDescription())
                 .visibility(playlist.getVisibility())
+                .isCollaborative(playlist.isCollaborative())
+                .autoAddEnabled(playlist.isAutoAddEnabled())
+                .autoAddRules(playlist.getAutoAddRules())
+                .lastModifiedAt(playlist.getLastModifiedAt())
+                .followerCount(playlist.getFollowerCount())
                 .videoCount(playlist.getVideoCount())
                 .totalDurationSeconds(playlist.getTotalDurationSeconds())
                 .thumbnailUrl(playlist.getThumbnailUrl())
                 .createdAt(playlist.getCreatedAt())
                 .updatedAt(playlist.getUpdatedAt())
                 .build();
+    }
+
+    /**
+     * Add a collaborator to a playlist
+     */
+    @Transactional
+    public void addCollaborator(UUID playlistId, UUID userId, PlaylistCollaborator.PermissionLevel permissionLevel) {
+        UUID currentUserId = currentUserAccessor.getCurrentUserId();
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new NotFoundException(ApiErrorCodes.PLAYLIST_NOT_FOUND, "Playlist not found"));
+
+        // Check if current user owns the playlist or is an admin
+        if (!playlist.getUserId().equals(currentUserId) && !currentUserAccessor.isAdmin()) {
+            throw new BusinessException(ApiErrorCodes.ACCESS_DENIED,
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Not authorized to modify this playlist");
+        }
+
+        // Check if already a collaborator
+        if (playlistCollaboratorRepository.existsByPlaylistIdAndUserId(playlistId, userId)) {
+            throw new BusinessException(ApiErrorCodes.BAD_REQUEST,
+                    org.springframework.http.HttpStatus.CONFLICT, "User is already a collaborator on this playlist");
+        }
+
+        PlaylistCollaborator collaborator = new PlaylistCollaborator();
+        collaborator.setPlaylistId(playlistId);
+        collaborator.setUserId(userId);
+        collaborator.setPermissionLevel(permissionLevel);
+        collaborator.setCreatedAt(Instant.now());
+        collaborator.setUpdatedAt(Instant.now());
+        playlistCollaboratorRepository.save(collaborator);
+
+        // Update the playlist's last modified time
+        playlist.setLastModifiedAt(Instant.now());
+        playlistRepository.save(playlist);
+
+        log.info("Added collaborator {} to playlist {} with permission {}", userId, playlistId, permissionLevel);
+    }
+
+    /**
+     * Remove a collaborator from a playlist
+     */
+    @Transactional
+    public void removeCollaborator(UUID playlistId, UUID userId) {
+        UUID currentUserId = currentUserAccessor.getCurrentUserId();
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new NotFoundException(ApiErrorCodes.PLAYLIST_NOT_FOUND, "Playlist not found"));
+
+        // Check if current user owns the playlist or is an admin
+        if (!playlist.getUserId().equals(currentUserId) && !currentUserAccessor.isAdmin()) {
+            throw new BusinessException(ApiErrorCodes.ACCESS_DENIED,
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Not authorized to modify this playlist");
+        }
+
+        // Prevent removing the owner
+        if (playlist.getUserId().equals(userId)) {
+            throw new BusinessException(ApiErrorCodes.BAD_REQUEST,
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Cannot remove the playlist owner");
+        }
+
+        PlaylistCollaborator collaborator = playlistCollaboratorRepository.findByPlaylistIdAndUserId(playlistId, userId)
+                .orElseThrow(() -> new NotFoundException(ApiErrorCodes.PLAYLIST_NOT_FOUND, "Collaborator not found"));
+
+        playlistCollaboratorRepository.delete(collaborator);
+
+        // Update the playlist's last modified time
+        playlist.setLastModifiedAt(Instant.now());
+        playlistRepository.save(playlist);
+
+        log.info("Removed collaborator {} from playlist {}", userId, playlistId);
+    }
+
+    /**
+     * Get collaborators for a playlist
+     */
+    @Transactional(readOnly = true)
+    public List<UUID> getCollaborators(UUID playlistId) {
+        UUID currentUserId = currentUserAccessor.getCurrentUserId();
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new NotFoundException(ApiErrorCodes.PLAYLIST_NOT_FOUND, "Playlist not found"));
+
+        // Check if current user has access to the playlist
+        if (!playlist.getUserId().equals(currentUserId) && !currentUserAccessor.isAdmin()) {
+            // Check if user is a collaborator
+            boolean isCollaborator = playlistCollaboratorRepository.existsByPlaylistIdAndUserId(playlistId, currentUserId);
+            if (!isCollaborator) {
+                throw new BusinessException(ApiErrorCodes.ACCESS_DENIED,
+                        org.springframework.http.HttpStatus.FORBIDDEN, "Not authorized to view collaborators");
+            }
+        }
+
+        List<PlaylistCollaborator> collaborators = playlistCollaboratorRepository.findByPlaylistId(playlistId);
+        return collaborators.stream()
+                .map(PlaylistCollaborator::getUserId)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Update collaborator permission level
+     */
+    @Transactional
+    public void updateCollaboratorPermission(UUID playlistId, UUID userId, PlaylistCollaborator.PermissionLevel permissionLevel) {
+        UUID currentUserId = currentUserAccessor.getCurrentUserId();
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new NotFoundException(ApiErrorCodes.PLAYLIST_NOT_FOUND, "Playlist not found"));
+
+        // Check if current user owns the playlist or is an admin
+        if (!playlist.getUserId().equals(currentUserId) && !currentUserAccessor.isAdmin()) {
+            throw new BusinessException(ApiErrorCodes.ACCESS_DENIED,
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Not authorized to modify this playlist");
+        }
+
+        // Prevent changing owner's permissions
+        if (playlist.getUserId().equals(userId)) {
+            throw new BusinessException(ApiErrorCodes.BAD_REQUEST,
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Cannot modify the playlist owner's permissions");
+        }
+
+        PlaylistCollaborator collaborator = playlistCollaboratorRepository.findByPlaylistIdAndUserId(playlistId, userId)
+                .orElseThrow(() -> new NotFoundException(ApiErrorCodes.PLAYLIST_NOT_FOUND, "Collaborator not found"));
+
+        collaborator.setPermissionLevel(permissionLevel);
+        collaborator.setUpdatedAt(Instant.now());
+        playlistCollaboratorRepository.save(collaborator);
+
+        // Update the playlist's last modified time
+        playlist.setLastModifiedAt(Instant.now());
+        playlistRepository.save(playlist);
+
+        log.info("Updated permission for collaborator {} on playlist {} to {}", userId, playlistId, permissionLevel);
     }
 }

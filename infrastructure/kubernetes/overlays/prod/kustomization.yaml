@@ -19,6 +19,7 @@ resources:
 - notification-service.yaml
 - analytics-service.yaml
 - moderation-service.yaml
+- live-tv-service.yaml
 - frontend.yaml
 
 images:
@@ -47,6 +48,8 @@ images:
 - name: ${REGISTRY}/${IMAGE_NAME}-analytics-service
   newTag: latest
 - name: ${REGISTRY}/${IMAGE_NAME}-moderation-service
+  newTag: latest
+- name: ${REGISTRY}/${IMAGE_NAME}-live-tv-service
   newTag: latest
 - name: ${REGISTRY}/${IMAGE_NAME}-frontend
   newTag: latest
@@ -78,6 +81,8 @@ replicas:
   count: 2
 - name: moderation-service
   count: 2
+- name: live-tv-service
+  count: 3
 - name: frontend
   count: 3
 

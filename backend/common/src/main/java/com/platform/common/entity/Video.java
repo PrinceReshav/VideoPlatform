@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -83,6 +84,11 @@ public class Video extends Auditable {
     @Column(name = "publication_state", nullable = false, length = 20)
     private PublicationState publicationState = PublicationState.DRAFT;
 
+    /** Automated content-safety gate. New uploads remain non-publishable until moderation passes. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "moderation_state", nullable = false, length = 20)
+    private ModerationState moderationState = ModerationState.PENDING;
+
     @Column(name = "published_at")
     private Instant publishedAt;
 
@@ -152,6 +158,43 @@ public class Video extends Auditable {
     @Column(name = "transcoding_completed_at")
     private Instant transcodingCompletedAt;
 
+    /** Video chapters for this video (Feature 12: Video Chapters) */
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VideoChapter> chapters = new java.util.ArrayList<>();
+
+    /** Privacy and sharing controls (Feature 13: Privacy & Sharing Controls) */
+    /** Whether the video requires password to view */
+    @Column(name = "password_protected", nullable = false)
+    private boolean passwordProtected = false;
+
+    /** Password for viewing the video (hashed) */
+    @Column(length = 255)
+    private String passwordHash;
+
+    /** Whether the video allows downloading */
+    @Column(name = "allow_download", nullable = false)
+    private boolean allowDownload = false;
+
+    /** Whether the video allows sharing */
+    @Column(name = "allow_sharing", nullable = false)
+    private boolean allowSharing = true;
+
+    /** Maximum number of views allowed (0 = unlimited) */
+    @Column(name = "max_views")
+    private Long maxViews;
+
+    /** Current view count towards the limit */
+    @Column(name = "current_views", nullable = false)
+    private Long currentViews = 0L;
+
+    /** Expiration date for the video (after which it's not accessible) */
+    @Column(name = "expires_at")
+    private Instant expiresAt;
+
+    /** Release date (video not accessible before this date) */
+    @Column(name = "release_date")
+    private Instant releaseDate;
+
     public enum Visibility {
         PUBLIC, UNLISTED, PRIVATE
     }
@@ -162,6 +205,10 @@ public class Video extends Auditable {
 
     public enum PublicationState {
         DRAFT, PUBLISHED, UNPUBLISHED, SCHEDULED
+    }
+
+    public enum ModerationState {
+        PENDING, PASSED, BLOCKED, ERROR
     }
 
     public boolean isPublished() {
@@ -205,6 +252,9 @@ public class Video extends Auditable {
         if (this.processingState != ProcessingState.READY) {
             throw new IllegalStateException("Cannot publish video that is not ready");
         }
+        if (this.moderationState != ModerationState.PASSED) {
+            throw new IllegalStateException("Cannot publish video before automated content moderation has passed");
+        }
         this.publicationState = PublicationState.PUBLISHED;
         this.publishedAt = Instant.now();
     }
@@ -218,6 +268,7 @@ public class Video extends Auditable {
         this.blockedBy = blockedBy;
         this.blockedReason = reason;
         this.blockedAt = Instant.now();
+        this.moderationState = ModerationState.BLOCKED;
     }
 
     public void unblock() {
@@ -225,5 +276,6 @@ public class Video extends Auditable {
         this.blockedBy = null;
         this.blockedReason = null;
         this.blockedAt = null;
+        this.moderationState = ModerationState.PENDING;
     }
 }

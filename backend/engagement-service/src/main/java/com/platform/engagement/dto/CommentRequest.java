@@ -23,4 +23,7 @@ public class CommentRequest {
     private String content;
 
     private UUID parentId;
+
+    /** Timestamp in video (in seconds) when this comment was made */
+    private Integer timestampSeconds;
 }

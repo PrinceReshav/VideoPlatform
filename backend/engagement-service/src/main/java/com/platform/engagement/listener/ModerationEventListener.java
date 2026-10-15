@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
-@Component
+@Component("engagementModerationEventListener")
 @RequiredArgsConstructor
 public class ModerationEventListener {
     private final CommentRepository commentRepository;

@@ -112,4 +112,97 @@ public class Channel extends Auditable {
 
     @Column(name = "email", length = 255)
     private String email;
+
+    /** Enhanced channel features for Feature 15: Creator Channels/Profiles */
+    /** Whether the channel is listed in search and recommendations */
+    @Column(name = "is_listed", nullable = false)
+    private boolean isListed = true;
+
+    /** Whether the channel allows community posts */
+    @Column(name = "allows_community", nullable = false)
+    private boolean allowsCommunity = true;
+
+    /** Whether the channel allows messaging from subscribers */
+    @Column(name = "allows_messaging", nullable = false)
+    private boolean allowsMessaging = false;
+
+    /** Default privacy setting for new videos */
+    @Column(name = "default_video_privacy", length = 20)
+    private String defaultVideoPrivacy = "PUBLIC"; // PUBLIC, UNLISTED, PRIVATE
+
+    /** Default license for new videos */
+    @Column(name = "default_license", length = 50)
+    private String defaultLicense = "STANDARD_YOUTUBE"; // STANDARD_YOUTUBE, CREATIVE_COMMONS
+
+    /** Whether to show subscriber count publicly */
+    @Column(name = "show_subscriber_count", nullable = false)
+    private boolean showSubscriberCount = true;
+
+    /** Whether to show like/dislike counts publicly */
+    @Column(name = "show_rating_counts", nullable = false)
+    private boolean showRatingCounts = true;
+
+    /** Verification tier/level */
+    @Column(name = "verification_tier", length = 20)
+    private String verificationTier = "NONE"; // NONE, BASIC, VERIFIED, OFFICIAL
+
+    /** Keywords/tags for the channel (comma-separated) */
+    @Column(name = "channel_keywords", length = 1000)
+    private String channelKeywords;
+
+    /** Associated AdSense account ID */
+    @Column(name = "adsense_account_id", length = 50)
+    private String adsenseAccountId;
+
+    /** Google Analytics property ID */
+    @Column(name = "google_analytics_id", length = 50)
+    private String googleAnalyticsId;
+
+    /** Channel trailer video ID */
+    @Column(name = "trailer_video_id")
+    private UUID trailerVideoId;
+
+    /** Featured channels (comma-separated video IDs) */
+    @Column(name = "featured_channels", length = 1000)
+    private String featuredChannels;
+
+    /** Featured playlists (comma-separated playlist IDs) */
+    @Column(name = "featured_playlists", length = 1000)
+    private String featuredPlaylists;
+
+    /** Country restriction settings */
+    @Column(name = "country_restriction", length = 100)
+    private String countryRestriction; // comma-separated country codes, empty = worldwide
+
+    /** Age restriction setting */
+    @Column(name = "age_restriction", length = 20)
+    private String ageRestriction = "NONE"; // NONE, RESTRICTED
+
+    /** Made for kids setting */
+    @Column(name = "made_for_kids", nullable = false)
+    private boolean madeForKids = false;
+
+    /** Automatic chapter generation enabled */
+    @Column(name = "auto_chapters_enabled", nullable = false)
+    private boolean autoChaptersEnabled = false;
+
+    /** Automatic captions enabled */
+    @Column(name = "auto_captions_enabled", nullable = false)
+    private boolean autoCaptionsEnabled = true;
+
+    /** Default comment settings for new videos */
+    @Column(name = "default_comment_setting", length = 20)
+    private String defaultCommentSetting = "ALLOW_ALL"; // ALLOW_ALL, HOLD_FOR_REVIEW, HOLD_POTENTIALLY_HARMFUL, DISABLE_COMMENTS
+
+    public void setCategoryId(UUID categoryId) {
+        if (categoryId == null) {
+            this.category = null;
+            return;
+        }
+
+        Category category = new Category();
+        category.setId(categoryId);
+        this.category = category;
+    }
+
 }

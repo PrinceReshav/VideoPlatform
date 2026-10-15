@@ -44,4 +44,31 @@ public class CreatorProfileResponse {
     private String email;
     private Instant createdAt;
     private Instant updatedAt;
+
+    /** Enhanced creator profile features for Feature 15: Creator Channels/Profiles */
+    private boolean isListed;
+    private boolean allowsFanFunding;
+    private boolean allowsMerchandise;
+    private boolean allowsSponsorships;
+    private boolean allowsAffiliateLinks;
+    private String defaultMaturityRating;
+    private boolean showSubscriberCount;
+    private String creatorKeywords;
+    private String linkedinUrl;
+    private String twitterHandle;
+    private String instagramHandle;
+    private String tiktokHandle;
+    private String discordUrl;
+    private String patreonUrl;
+    private String koFiUrl;
+    private String buyMeCoffeeUrl;
+    private boolean openToCollaborations;
+    private boolean openToSponsorships;
+    private UUID primaryLanguageId;
+    private String secondaryLanguages;
+    private String contentNiche;
+    private String uploadSchedule;
+    private boolean emailNotificationsEnabled;
+    private boolean allowContentIdMatching;
+    private boolean allowAutomatedClaims;
 }

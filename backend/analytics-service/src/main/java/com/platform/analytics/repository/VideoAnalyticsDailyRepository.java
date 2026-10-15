@@ -27,7 +27,8 @@ public interface VideoAnalyticsDailyRepository extends JpaRepository<VideoAnalyt
     @Query("SELECT new com.platform.analytics.dto.VideoAnalyticsSummary(" +
             "SUM(v.views), SUM(v.watchTimeSeconds), SUM(v.likes), SUM(v.comments), " +
             "SUM(v.shares), SUM(v.subscribersGained), SUM(v.subscribersLost), " +
-            "AVG(v.avgViewDurationSeconds), AVG(v.avgViewPercentage) " +
+            "AVG(v.avgViewDurationSeconds), AVG(v.avgViewPercentage), " +
+            "SUM(v.uniqueViewers), MAX(v.viewersAtPeakConcurrent), AVG(v.averageCompletionRatePercentage) " +
             ") FROM VideoAnalyticsDaily v WHERE v.videoId = :videoId AND v.date BETWEEN :startDate AND :endDate")
     VideoAnalyticsSummary getSummaryByVideoIdAndDateRange(@Param("videoId") UUID videoId,
                                                           @Param("startDate") LocalDate startDate,
@@ -36,7 +37,8 @@ public interface VideoAnalyticsDailyRepository extends JpaRepository<VideoAnalyt
     @Query("SELECT new com.platform.analytics.dto.ChannelAnalyticsSummary(" +
             "SUM(c.views), SUM(c.watchTimeSeconds), SUM(c.likes), SUM(c.comments), " +
             "SUM(c.shares), SUM(c.subscribersGained), SUM(c.subscribersLost), " +
-            "SUM(c.videosPublished) " +
+            "SUM(c.videosPublished), SUM(c.shortsPublished), SUM(c.liveStreamMinutes), " +
+            "MAX(c.peakConcurrentLiveViewers) " +
             ") FROM ChannelAnalyticsDaily c WHERE c.channelId = :channelId AND c.date BETWEEN :startDate AND :endDate")
     ChannelAnalyticsSummary getSummaryByChannelIdAndDateRange(@Param("channelId") UUID channelId,
                                                                @Param("startDate") LocalDate startDate,

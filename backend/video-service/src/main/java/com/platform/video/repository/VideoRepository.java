@@ -4,6 +4,7 @@ import com.platform.common.entity.ProcessingJob;
 import com.platform.common.entity.Video;
 import com.platform.common.entity.VideoFile;
 import com.platform.video.projection.VideoListProjection;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -46,6 +48,12 @@ public interface VideoRepository extends com.platform.common.repository.VideoRep
 
     @Query("SELECT v FROM Video v WHERE v.processingState = :state AND v.deleted = false")
     List<Video> findByProcessingState(@Param("state") Video.ProcessingState state);
+
+    @Query("SELECT v FROM Video v WHERE v.deleted = true")
+    List<Video> findDeletedVideos();
+
+    @Query("SELECT v FROM Video v WHERE v.creatorId = :creatorId AND v.deleted = true")
+    List<Video> findDeletedVideosByCreatorId(@Param("creatorId") UUID creatorId);
 
     @Query("SELECT v FROM Video v WHERE v.transcodingJobId = :jobId")
     Optional<Video> findByTranscodingJobId(@Param("jobId") UUID jobId);
@@ -108,4 +116,64 @@ public interface VideoRepository extends com.platform.common.repository.VideoRep
     @Modifying
     @Query("UPDATE Video v SET v.commentCount = v.commentCount - 1 WHERE v.id = :videoId AND v.commentCount > 0")
     void decrementCommentCount(@Param("videoId") UUID videoId);
+
+
+    @Transactional(readOnly = true)
+    @Query("""
+    SELECT v FROM Video v
+    WHERE (:categories IS NULL OR v.categoryId IN :categories)
+      AND (:genres IS NULL OR v.genreId IN :genres)
+      AND v.id NOT IN :excludedIds
+      AND v.publicationState = 'PUBLISHED'
+      AND v.processingState = 'READY'
+      AND v.blocked = false
+      AND v.deleted = false
+      AND v.visibility = 'PUBLIC'
+    ORDER BY RAND()
+    """)
+    List<Video> findRecommendedVideos(
+            @Param("categories") Set<UUID> categories,
+            @Param("genres") Set<UUID> genres,
+            @Param("excludedIds") Set<UUID> excludedIds,
+            Pageable pageable
+    );
+
+
+
+
+    @Transactional(readOnly = true)
+    @Query("""
+    SELECT v FROM Video v
+    WHERE v.publicationState = 'PUBLISHED'
+      AND v.processingState = 'READY'
+      AND v.blocked = false
+      AND v.deleted = false
+      AND v.visibility = 'PUBLIC'
+    ORDER BY v.viewCount DESC, v.likeCount DESC
+    """)
+    List<Video> findPopularVideos(Pageable pageable);
+
+
+    @Transactional(readOnly = true)
+    @Query("SELECT SUM(v.viewCount) FROM Video v WHERE v.creatorId = :creatorId AND v.deleted = false")
+    Long getTotalViewsByCreatorId(@Param("creatorId") UUID creatorId);
+
+    @Transactional(readOnly = true)
+    @Query("SELECT SUM(v.likeCount) FROM Video v WHERE v.creatorId = :creatorId AND v.deleted = false")
+    Long getTotalLikesByCreatorId(@Param("creatorId") UUID creatorId);
+
+    @Transactional(readOnly = true)
+    @Query("SELECT SUM(v.commentCount) FROM Video v WHERE v.creatorId = :creatorId AND v.deleted = false")
+    Long getTotalCommentsByCreatorId(@Param("creatorId") UUID creatorId);
+
+    @Transactional(readOnly = true)
+    @Query("""
+    SELECT COUNT(v)
+    FROM Video v
+    WHERE v.creatorId = :creatorId
+      AND v.deleted = false
+    """)
+    int countNonDeletedVideosByCreatorId(
+            @Param("creatorId") UUID creatorId
+    );
 }

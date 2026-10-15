@@ -1,8 +1,11 @@
 package com.platform.user.controller;
 
 import com.platform.user.dto.ChannelResponse;
+import com.platform.user.dto.CreateChannelRequest;
+import com.platform.user.dto.UpdateChannelRequest;
 import com.platform.user.service.ChannelService;
 import com.platform.common.dto.PageResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -59,5 +62,19 @@ public class ChannelController {
     @GetMapping("/verified")
     public ResponseEntity<List<ChannelResponse>> getVerifiedChannels() {
         return ResponseEntity.ok(channelService.getVerifiedChannels());
+    }
+
+    /** Create a new channel (Feature 15: Creator Channels/Profiles) */
+    @PostMapping
+    public ResponseEntity<ChannelResponse> createChannel(@Valid @RequestBody CreateChannelRequest request) {
+        return ResponseEntity.ok(channelService.createChannel(request));
+    }
+
+    /** Update an existing channel (Feature 15: Creator Channels/Profiles) */
+    @PutMapping("/{id}")
+    public ResponseEntity<ChannelResponse> updateChannel(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateChannelRequest request) {
+        return ResponseEntity.ok(channelService.updateChannel(id, request));
     }
 }

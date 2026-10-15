@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Bell, ChevronDown, Menu, Palette, Plus, Search, Video, X, Command } from 'lucide-react';
+import { Bell, ChevronDown, Menu, Palette, Plus, Search, Video, X, Command, Sparkles } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { Avatar } from '../ui/Avatar';
 import { AppearanceMenu } from './AppearanceMenu';
+import { isCreatorStudioDevNoLogin } from '../../services/api/creatorStudioApi';
 
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const { user, isAuthenticated, logout } = useAuth();
@@ -68,6 +69,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
       </form>
 
       <div className="header-right">
+        {(isAuthenticated || isCreatorStudioDevNoLogin) && <Link to="/creator-studio" aria-label="Open Creator Studio" title={isCreatorStudioDevNoLogin && !isAuthenticated ? 'Open Creator Studio (local development mode)' : 'Open Creator Studio'} className={`creator-studio-quick-link inline-flex items-center gap-1.5 rounded-full border border-violet-300/60 bg-gradient-to-r from-violet-700 to-fuchsia-700 px-3 py-2 text-xs font-bold text-white shadow-md transition hover:-translate-y-px hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 ${location.pathname.startsWith('/creator-studio') ? 'creator-studio-quick-link-active' : ''}`}><Sparkles className="h-3.5 w-3.5"/><span>Creator-Studio</span></Link>}
         {isAuthenticated && <Link to="/creator/upload" className="create-button"><Plus className="w-4 h-4"/><span>Create</span></Link>}
         <div className="header-popover-anchor" ref={appearanceRef}>
           <button className={`header-icon-button ${appearanceOpen?'active':''}`} onClick={()=>{setAppearanceOpen(v=>!v);setMenuOpen(false)}} aria-label="Theme and colors" aria-expanded={appearanceOpen}><Palette className="w-5 h-5"/><span className="accent-dot"/></button>

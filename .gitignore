@@ -225,3 +225,18 @@ target/docs/
 .parcel-cache/
 .esbuild/
 .turbo/
+
+
+
+
+# Maven / Java build outputs
+**/target/
+
+# Application and diagnostic logs
+logs/
+*.log
+
+# Local environment secrets
+.env
+.env.*
+!.env.example

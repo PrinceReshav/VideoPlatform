@@ -18,4 +18,9 @@ public class VideoAnalyticsResponse {
     private String videoTitle;
     private VideoAnalyticsSummary summary;
     private List<DailyVideoAnalytics> dailyData;
+
+    // Additional fields for comprehensive analytics
+    private LocalDate periodStart;
+    private LocalDate periodEnd;
+    private String periodType; // DAILY, WEEKLY, MONTHLY, CUSTOM
 }

@@ -28,9 +28,12 @@ public interface LiveChannelRepository extends JpaRepository<LiveChannel, UUID> 
             Pageable pageable
     );
 
+    @Query("""
+            SELECT DISTINCT c FROM LiveChannel c JOIN c.categories cat
+            WHERE c.deleted = false AND LOWER(cat) = LOWER(:category)
+            """)
     Page<LiveChannel> findByCategoryAndDeletedFalse(
-            String category,
-            Pageable pageable
+            @Param("category") String category, Pageable pageable
     );
 
     Page<LiveChannel> findByLanguageAndDeletedFalse(
@@ -95,17 +98,8 @@ public interface LiveChannelRepository extends JpaRepository<LiveChannel, UUID> 
             FROM LiveChannel c
             WHERE c.deleted = false
 
-              AND (
-                    :country IS NULL
-                    OR UPPER(TRIM(c.countryCode)) =
-                       UPPER(TRIM(:country))
-              )
-
-              AND (
-                    :category IS NULL
-                    OR LOWER(TRIM(c.category)) =
-                       LOWER(TRIM(:category))
-              )
+              AND (:country IS NULL OR c.countryCode = :country)
+              AND (:category IS NULL OR EXISTS (SELECT 1 FROM c.categories cat WHERE LOWER(cat) = LOWER(:category)))
 
               AND (
                     :search IS NULL
@@ -150,8 +144,7 @@ public interface LiveChannelRepository extends JpaRepository<LiveChannel, UUID> 
      */
 
     List<LiveChannel> findAllByStatusInAndDeletedFalse(
-            List<LiveChannel.StreamStatus> statuses,
-            Pageable pageable
+            List<LiveChannel.StreamStatus> statuses, Pageable pageable
     );
 
 
@@ -164,6 +157,8 @@ public interface LiveChannelRepository extends JpaRepository<LiveChannel, UUID> 
     Optional<LiveChannel> findByTvgIdAndDeletedFalse(
             String tvgId
     );
+
+    Optional<LiveChannel> findByTvgId(String tvgId);
 
     List<LiveChannel> findAllByDeletedFalse();
 
@@ -219,7 +214,7 @@ public interface LiveChannelRepository extends JpaRepository<LiveChannel, UUID> 
             )
             FROM LiveChannel c
             WHERE c.deleted = false
-              AND (:category IS NULL OR LOWER(TRIM(c.category)) = LOWER(TRIM(:category)))
+              AND (:category IS NULL OR EXISTS (SELECT 1 FROM c.categories cat WHERE LOWER(cat) = LOWER(:category)))
               AND (:search IS NULL OR TRIM(:search) = ''
                    OR LOWER(c.name) LIKE LOWER(CONCAT('%', TRIM(:search), '%'))
                    OR LOWER(c.country) LIKE LOWER(CONCAT('%', TRIM(:search), '%'))
@@ -235,18 +230,18 @@ public interface LiveChannelRepository extends JpaRepository<LiveChannel, UUID> 
 
     @Query("""
             SELECT NEW com.platform.livetv.dto.CategoryStats(
-                c.category,
-                COUNT(c)
+                cat,
+                COUNT(DISTINCT c)
             )
-            FROM LiveChannel c
+            FROM LiveChannel c JOIN c.categories cat
             WHERE c.deleted = false
-              AND (:country IS NULL OR UPPER(TRIM(c.countryCode)) = UPPER(TRIM(:country)))
+              AND (:country IS NULL OR c.countryCode = :country)
               AND (:search IS NULL OR TRIM(:search) = ''
                    OR LOWER(c.name) LIKE LOWER(CONCAT('%', TRIM(:search), '%'))
                    OR LOWER(c.country) LIKE LOWER(CONCAT('%', TRIM(:search), '%'))
-                   OR LOWER(c.category) LIKE LOWER(CONCAT('%', TRIM(:search), '%')))
-            GROUP BY c.category
-            ORDER BY COUNT(c) DESC, c.category ASC
+                   OR LOWER(cat) LIKE LOWER(CONCAT('%', TRIM(:search), '%')))
+            GROUP BY cat
+            ORDER BY COUNT(DISTINCT c) DESC, cat ASC
             """)
     List<CategoryStats> getCategoryStats(
             @Param("country") String country,
@@ -298,8 +293,7 @@ public interface LiveChannelRepository extends JpaRepository<LiveChannel, UUID> 
             Pageable pageable
     ) {
         return findByStatusAndDeletedFalseOrderByViewCountDesc(
-                LiveChannel.StreamStatus.ONLINE,
-                pageable
+                LiveChannel.StreamStatus.PLAYABLE, pageable
         );
     }
 }

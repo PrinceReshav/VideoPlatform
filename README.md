@@ -1,3 +1,8 @@
+
+## Live TV V10
+
+Live TV now preserves the complete IPTV-org channel/stream universe, performs candidate-level health checks, uses direct HLS before the compatibility proxy, and can fall back to an official embeddable YouTube Live broadcast when IPTV candidates are exhausted. See `LIVE_TV_V10_RELEASE_NOTES.md`.
+
 # Video Platform
 
 A production-grade, scalable full-stack video streaming and creator platform built with modern technologies.

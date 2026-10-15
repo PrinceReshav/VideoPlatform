@@ -1,12 +1,18 @@
-﻿spring:
+
+spring:
   config:
     activate:
       on-profile: dev
+
   datasource:
-    url: jdbc:h2:tcp://localhost:9123/video-platform-dev;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS AUTH_SCHEMA\;CREATE SCHEMA IF NOT EXISTS USER_SCHEMA\;CREATE SCHEMA IF NOT EXISTS VIDEO_SCHEMA\;CREATE SCHEMA IF NOT EXISTS UPLOAD_SCHEMA\;CREATE SCHEMA IF NOT EXISTS ENGAGEMENT_SCHEMA\;CREATE SCHEMA IF NOT EXISTS SUBSCRIPTION_SCHEMA\;CREATE SCHEMA IF NOT EXISTS PLAYLIST_SCHEMA\;CREATE SCHEMA IF NOT EXISTS NOTIFICATION_SCHEMA\;CREATE SCHEMA IF NOT EXISTS ANALYTICS_SCHEMA\;CREATE SCHEMA IF NOT EXISTS MODERATION_SCHEMA
+    url: 'jdbc:h2:mem:engagement_dev;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS auth_schema\;CREATE SCHEMA IF NOT EXISTS user_schema\;CREATE SCHEMA IF NOT EXISTS video_schema\;CREATE SCHEMA IF NOT EXISTS upload_schema\;CREATE SCHEMA IF NOT EXISTS engagement_schema\;CREATE SCHEMA IF NOT EXISTS subscription_schema\;CREATE SCHEMA IF NOT EXISTS playlist_schema\;CREATE SCHEMA IF NOT EXISTS notification_schema\;CREATE SCHEMA IF NOT EXISTS analytics_schema\;CREATE SCHEMA IF NOT EXISTS moderation_schema\;CREATE SCHEMA IF NOT EXISTS common_schema'
     username: sa
     password:
     driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,20 +22,34 @@
         show_sql: false
         default_schema: engagement_schema
     open-in-view: false
+
   flyway:
     enabled: false
+
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-  redis:
-    host: ${SPRING_REDIS_HOST:localhost}
-    port: ${SPRING_REDIS_PORT:6379}
-    password: ${SPRING_REDIS_PASSWORD:}
+    listener:
+      auto-startup: false
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=5m
+
   servlet:
     multipart:
       max-file-size: 10GB
       max-request-size: 10GB
 
 management:
+  health:
+    redis:
+      enabled: false
   endpoints:
     web:
       exposure:
@@ -41,5 +61,3 @@ management:
 logging:
   level:
     com.platform: INFO
-
-

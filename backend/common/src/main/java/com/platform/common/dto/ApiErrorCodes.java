@@ -32,6 +32,7 @@ public final class ApiErrorCodes {
     public static final String RESOURCE_ALREADY_EXISTS = "RESOURCE_ALREADY_EXISTS";
     public static final String RESOURCE_CONFLICT = "RESOURCE_CONFLICT";
     public static final String RESOURCE_LOCKED = "RESOURCE_LOCKED";
+    public static final String AB_TEST_NOT_FOUND = "AB_TEST_NOT_FOUND";
 
     // User/Creator
     public static final String USER_NOT_FOUND = "USER_NOT_FOUND";
@@ -105,6 +106,13 @@ public final class ApiErrorCodes {
     public static final String SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE";
     public static final String BAD_REQUEST = "BAD_REQUEST";
     public static final String METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED";
+
+    // Compatibility aliases used by newer feature services
+    public static final String FORBIDDEN = "FORBIDDEN";
+    public static final String INVALID_REQUEST = "INVALID_REQUEST";
+    public static final String NOT_FOUND = "NOT_FOUND";
+    public static final String UPLOAD_FAILED = "UPLOAD_FAILED";
+
 
     private ApiErrorCodes() {}
 }

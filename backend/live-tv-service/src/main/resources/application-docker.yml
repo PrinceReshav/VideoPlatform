@@ -37,15 +37,16 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.platform.*"
-  redis:
-    host: redis
-    port: 6379
-    timeout: 5000ms
-    lettuce:
-      pool:
-        max-active: 20
-        max-idle: 10
-        min-idle: 5
+  data:
+    redis:
+      host: redis
+      port: 6379
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
   cache:
     type: caffeine
     caffeine:

@@ -1,0 +1,40 @@
+# Video Platform Search Synonyms
+# Format: => indicates equivalent terms
+# => indicates both directions
+# -> indicates one-way mapping
+
+# Common video-related synonyms
+vid, video, movie, film => vid
+movie, film, clip => video
+clip, video, movie => clip
+
+# Quality/resolution synonyms
+4k, 4k, ultra hd, uhd => 4k
+1080p, full hd, fhd => 1080p
+720p, hd => 720p
+480p, sd => 480p
+360p => 360p
+240p => 240p
+144p => 144p
+
+# Content type synonyms
+live, live stream, streaming => live
+vod, video on demand => vod
+short, shorts, short form => short
+episode, tv show => episode
+movie, film => movie
+
+# Platform feature synonyms
+subscribe, sub, subscription => subscribe
+like, fav, favorite => like
+comment, discussion => comment
+share, repost => share
+playlist, pl => playlist
+channel, ch => channel
+
+# Common misspellings/variations
+teh => the
+and => &
+& => and
+w/ => with
+w/o => without

@@ -24,7 +24,9 @@ public interface ChannelAnalyticsDailyRepository extends JpaRepository<ChannelAn
     @Query("SELECT new com.platform.analytics.dto.ChannelAnalyticsSummary(" +
             "SUM(c.views), SUM(c.watchTimeSeconds), SUM(c.likes), SUM(c.comments), " +
             "SUM(c.shares), SUM(c.subscribersGained), SUM(c.subscribersLost), " +
-            "SUM(c.videosPublished) " +
+            "SUM(c.videosPublished), " +
+            "SUM(c.uniqueViewers), MAX(c.viewersAtPeakConcurrent), AVG(c.averageCompletionRatePercentage), " +
+            "SUM(c.shortsPublished), SUM(c.liveStreamMinutes), MAX(c.peakConcurrentLiveViewers) " +
             ") FROM ChannelAnalyticsDaily c WHERE c.channelId = :channelId AND c.date BETWEEN :startDate AND :endDate")
     ChannelAnalyticsSummary getSummaryByChannelIdAndDateRange(@Param("channelId") UUID channelId,
                                                                @Param("startDate") LocalDate startDate,

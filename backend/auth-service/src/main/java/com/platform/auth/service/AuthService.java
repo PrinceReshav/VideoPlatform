@@ -115,7 +115,7 @@ public class AuthService {
                 user.getRoles().stream().map(Enum::name).collect(java.util.stream.Collectors.toSet()));
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = BadCredentialsException.class)
     public TokenResponse login(LoginRequest request, String ipAddress) {
         ValidationUtil.validateAndThrow(request);
 

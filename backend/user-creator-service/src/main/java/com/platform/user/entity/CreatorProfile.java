@@ -126,4 +126,105 @@ public class CreatorProfile extends Auditable {
 
     @Column(name = "email", length = 255)
     private String email;
+
+    /** Enhanced creator profile features for Feature 15: Creator Channels/Profiles */
+    /** Whether the profile is listed in search and recommendations */
+    @Column(name = "is_listed", nullable = false)
+    private boolean isListed = true;
+
+    /** Whether the creator allows fan funding */
+    @Column(name = "allows_fan_funding", nullable = false)
+    private boolean allowsFanFunding = false;
+
+    /** Whether the creator allows merchandise sales */
+    @Column(name = "allows_merchandise", nullable = false)
+    private boolean allowsMerchandise = false;
+
+    /** Whether the creator allows sponsorships */
+    @Column(name = "allows_sponsorships", nullable = false)
+    private boolean allowsSponsorships = false;
+
+    /** Whether the creator allows affiliate links */
+    @Column(name = "allows_affiliate_links", nullable = false)
+    private boolean allowsAffiliateLinks = false;
+
+    /** Default maturity rating for new content */
+    @Column(name = "default_maturity_rating", length = 20)
+    private String defaultMaturityRating = "GENERAL"; // GENERAL, MATURE, RESTRICTED
+
+    /** Whether to show subscriber count publicly */
+    @Column(name = "show_subscriber_count", nullable = false)
+    private boolean showSubscriberCount = true;
+
+    /** Keywords/tags for the creator (comma-separated) */
+    @Column(name = "creator_keywords", length = 1000)
+    private String creatorKeywords;
+
+    /** LinkedIn profile URL */
+    @Column(name = "linkedin_url", length = 500)
+    private String linkedinUrl;
+
+    /** Twitter/X handle */
+    @Column(name = "twitter_handle", length = 100)
+    private String twitterHandle;
+
+    /** Instagram handle */
+    @Column(name = "instagram_handle", length = 100)
+    private String instagramHandle;
+
+    /** TikTok handle */
+    @Column(name = "tiktok_handle", length = 100)
+    private String tiktokHandle;
+
+    /** Discord invite URL */
+    @Column(name = "discord_url", length = 500)
+    private String discordUrl;
+
+    /** Patreon URL */
+    @Column(name = "patreon_url", length = 500)
+    private String patreonUrl;
+
+    /** Ko-fi URL */
+    @Column(name = "ko_fi_url", length = 500)
+    private String koFiUrl;
+
+    /** Buy Me a Coffee URL */
+    @Column(name = "buy_me_coffee_url", length = 500)
+    private String buyMeCoffeeUrl;
+
+    /** Whether the creator is open to collaborations */
+    @Column(name = "open_to_collaborations", nullable = false)
+    private boolean openToCollaborations = false;
+
+    /** Whether the creator is open to sponsorships */
+    @Column(name = "open_to_sponsorships", nullable = false)
+    private boolean openToSponsorships = false;
+
+    /** Primary content language */
+    @Column(name = "primary_language_id")
+    private UUID primaryLanguageId;
+
+    /** Secondary content languages (comma-separated language IDs) */
+    @Column(name = "secondary_languages", length = 500)
+    private String secondaryLanguages;
+
+    /** Content niche/category (comma-separated category IDs) */
+    @Column(name = "content_niche", length = 500)
+    private String contentNiche;
+
+    /** Upload schedule (cron expression or human-readable) */
+    @Column(name = "upload_schedule", length = 100)
+    private String uploadSchedule;
+
+    /** Whether to send email notifications for new uploads */
+    @Column(name = "email_notifications_enabled", nullable = false)
+    private boolean emailNotificationsEnabled = true;
+
+    /** Whether to allow content ID matching */
+    @Column(name = "allow_content_id_matching", nullable = false)
+    private boolean allowContentIdMatching = true;
+
+    /** Whether to allow automated copyright claims */
+    @Column(name = "allow_automated_claims", nullable = false)
+    private boolean allowAutomatedClaims = true;
 }

@@ -27,7 +27,14 @@ public class DevDataSeeder {
 
     private void seed(UserRepository repository, PasswordEncoder encoder, UUID id, String email,
                       String username, String displayName, String password, User.Role role) {
-        if (repository.existsById(id)) return;
+        // The shared development database may already contain users created by an
+        // earlier run with different UUIDs. Never attempt a duplicate email or username
+        // insert, and never overwrite an existing account's credentials or roles.
+        if (repository.existsById(id)
+                || repository.existsByEmail(email)
+                || repository.existsByUsername(username)) {
+            return;
+        }
         User user = new User();
         user.setId(id);
         user.setEmail(email);

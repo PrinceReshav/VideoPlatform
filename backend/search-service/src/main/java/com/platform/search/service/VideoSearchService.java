@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import co.elastic.clients.json.JsonData;
+import co.elastic.clients.elasticsearch._types.GeoLocation;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import co.elastic.clients.json.JsonData;
@@ -308,19 +309,39 @@ public class VideoSearchService {
             if (request.getQ() != null
                     && !request.getQ().isBlank()) {
 
-                bool.must(
-                        Query.of(m -> m.multiMatch(mm -> mm
-                                .query(request.getQ())
-                                .fields(
-                                        "title^3",
-                                        "description",
-                                        "channelName^2",
-                                        "tags"
-                                )
-                                .type(TextQueryType.BestFields)
-                                .fuzziness("AUTO")
-                        ))
-                );
+                // Determine which fields to search based on request parameters
+                if (Boolean.TRUE.equals(request.getSearchTranscript())) {
+                    // Search in title, description, transcript, channelName, tags
+                    bool.must(
+                            Query.of(m -> m.multiMatch(mm -> mm
+                                    .query(request.getQ())
+                                    .fields(
+                                            "title^3",
+                                            "description",
+                                            "transcript^2",
+                                            "channelName^2",
+                                            "tags"
+                                    )
+                                    .type(TextQueryType.BestFields)
+                                    .fuzziness("AUTO")
+                            ))
+                    );
+                } else {
+                    // Default search in title, description, channelName, tags
+                    bool.must(
+                            Query.of(m -> m.multiMatch(mm -> mm
+                                    .query(request.getQ())
+                                    .fields(
+                                            "title^3",
+                                            "description",
+                                            "channelName^2",
+                                            "tags"
+                                    )
+                                    .type(TextQueryType.BestFields)
+                                    .fuzziness("AUTO")
+                            ))
+                    );
+                }
 
             } else {
 
@@ -461,6 +482,70 @@ public class VideoSearchService {
 
             /*
              * ---------------------------------------------------------
+             * GEOGRAPHIC SEARCH
+             * ---------------------------------------------------------
+             */
+            if (request.getLatitude() != null
+                    && request.getLongitude() != null
+                    && request.getDistance() != null) {
+
+                GeoLocation geoLocation = GeoLocation.of(
+                        geo -> geo.latlon(
+                                latlon -> latlon
+                                        .lat(request.getLatitude())
+                                        .lon(request.getLongitude())
+                        )
+                );
+
+                bool.filter(
+                        Query.of(geoQuery -> geoQuery.geoDistance(distance -> distance
+                                .field("location")
+                                .location(geoLocation)
+                                .distance(request.getDistance())
+                        ))
+                );
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * LOCATION FILTERS
+             * ---------------------------------------------------------
+             */
+            if (request.getCountryCode() != null
+                    && !request.getCountryCode().isBlank()) {
+
+                bool.filter(
+                        Query.of(t -> t.term(term -> term
+                                .field("countryCode")
+                                .value(request.getCountryCode())
+                        ))
+                );
+            }
+
+            if (request.getRegionCode() != null
+                    && !request.getRegionCode().isBlank()) {
+
+                bool.filter(
+                        Query.of(t -> t.term(term -> term
+                                .field("regionCode")
+                                .value(request.getRegionCode())
+                        ))
+                );
+            }
+
+            if (request.getCityName() != null
+                    && !request.getCityName().isBlank()) {
+
+                bool.filter(
+                        Query.of(t -> t.term(term -> term
+                                .field("cityName")
+                                .value(request.getCityName())
+                        ))
+                );
+            }
+
+            /*
+             * ---------------------------------------------------------
              * GENRE
              * ---------------------------------------------------------
              */
@@ -563,6 +648,87 @@ public class VideoSearchService {
                                                 request.getDurationMax()
                                         )
                                 )
+                        ))
+                );
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * VIEW COUNT FILTERS
+             * ---------------------------------------------------------
+             */
+            if (request.getMinViewCount() != null) {
+
+                bool.filter(
+                        Query.of(r -> r.range(range -> range
+                                .field("viewCount")
+                                .gte(
+                                        JsonData.of(
+                                                request.getMinViewCount()
+                                        )
+                                )
+                        ))
+                );
+            }
+
+            if (request.getMaxViewCount() != null) {
+
+                bool.filter(
+                        Query.of(r -> r.range(range -> range
+                                .field("viewCount")
+                                .lte(
+                                        JsonData.of(
+                                                request.getMaxViewCount()
+                                        )
+                                )
+                        ))
+                );
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * TRANSCRIPT FILTERS
+             * ---------------------------------------------------------
+             */
+            if (Boolean.TRUE.equals(request.getHasTranscript())) {
+
+                bool.filter(
+                        Query.of(t -> t.exists(e -> e
+                                .field("transcript")
+                        ))
+                );
+            }
+
+            if (Boolean.FALSE.equals(request.getHasTranscript())) {
+
+                bool.mustNot(
+                        Query.of(t -> t.exists(e -> e
+                                .field("transcript")
+                        ))
+                );
+            }
+
+            /*
+             * ---------------------------------------------------------
+             * LIVE VIDEO FILTERS
+             * ---------------------------------------------------------
+             */
+            if (Boolean.TRUE.equals(request.getIsLive())) {
+
+                bool.filter(
+                        Query.of(t -> t.term(term -> term
+                                .field("processingState")
+                                .value("LIVE")
+                        ))
+                );
+            }
+
+            if (Boolean.TRUE.equals(request.getIsUpcoming())) {
+
+                bool.filter(
+                        Query.of(t -> t.term(term -> term
+                                .field("processingState")
+                                .value("UPCOMING")
                         ))
                 );
             }
@@ -853,6 +1019,7 @@ public class VideoSearchService {
                 .slug(doc.getSlug())
                 .title(doc.getTitle())
                 .description(doc.getDescription())
+                .transcript(doc.getTranscript())
 
                 .creatorId(doc.getCreatorId())
 
@@ -869,6 +1036,10 @@ public class VideoSearchService {
 
                 .languageId(doc.getLanguageId())
                 .languageName(doc.getLanguageName())
+                .location(doc.getLocation())
+                .countryCode(doc.getCountryCode())
+                .regionCode(doc.getRegionCode())
+                .cityName(doc.getCityName())
 
                 .durationSeconds(doc.getDurationSeconds())
 
@@ -884,6 +1055,10 @@ public class VideoSearchService {
                 .processingState(doc.getProcessingState())
 
                 .isPublished(doc.getIsPublished())
+                .engagementScore(doc.getEngagementScore())
+                .watchTimeSeconds(doc.getWatchTimeSeconds())
+                .shares(doc.getShares())
+                .subscribersGained(doc.getSubscribersGained())
 
                 .score(hit.getScore())
 

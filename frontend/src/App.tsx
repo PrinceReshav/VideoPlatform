@@ -22,6 +22,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { CreatorDashboardPage } from './pages/CreatorDashboardPage';
+import { CreatorStudioPage } from './pages/CreatorStudioPage';
 import { UploadPage } from './pages/UploadPage';
 import { MyVideosPage } from './pages/MyVideosPage';
 import { VideoEditPage } from './pages/VideoEditPage';
@@ -32,6 +33,7 @@ import { AdminReportsPage } from './pages/AdminReportsPage';
 import { AdminCategoriesPage } from './pages/AdminCategoriesPage';
 import { LiveTvPage } from './pages/LiveTvPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { isCreatorStudioDevNoLogin } from './services/api/creatorStudioApi';
 
 function PrivateRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: string }) {
   const { isAuthenticated, user } = useAuth();
@@ -87,6 +89,9 @@ export default function App() {
         <Route path="category/:categorySlug" element={<SearchPage />} />
         <Route path="genre/:genreSlug" element={<SearchPage />} />
         <Route path="live" element={<LiveTvPage />} />
+        <Route path="live/channel/:channelId" element={<LiveTvPage />} />
+        <Route path="live/:category/channel/:channelId" element={<LiveTvPage />} />
+        <Route path="live/:category" element={<LiveTvPage />} />
       </Route>
 
       {/* Auth Routes */}
@@ -107,7 +112,13 @@ export default function App() {
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 
-      {/* Creator Routes */}
+      {/* Explicit local-only demo mode bypasses login for Creator Studio only. The flag is disabled in production builds. */}
+      <Route element={isCreatorStudioDevNoLogin ? <CreatorLayout /> : <PrivateRoute><CreatorLayout /></PrivateRoute>}>
+        <Route path="creator-studio" element={<CreatorStudioPage />} />
+        <Route path="creator-studio/:studioId" element={<CreatorStudioPage />} />
+      </Route>
+
+      {/* Existing Creator Routes */}
       <Route element={<PrivateRoute requiredRole="CREATOR"><CreatorLayout /></PrivateRoute>}>
         <Route path="creator" element={<CreatorDashboardPage />} />
         <Route path="creator/upload" element={<UploadPage />} />

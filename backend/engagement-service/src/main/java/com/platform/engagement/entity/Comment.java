@@ -15,7 +15,8 @@ import java.util.UUID;
                 @Index(name = "idx_comments_user", columnList = "user_id"),
                 @Index(name = "idx_comments_parent", columnList = "parent_id"),
                 @Index(name = "idx_comments_created_at", columnList = "created_at"),
-                @Index(name = "idx_comments_hidden", columnList = "hidden")
+                @Index(name = "idx_comments_hidden", columnList = "hidden"),
+                @Index(name = "idx_comments_timestamp", columnList = "timestamp_seconds")
         })
 @Getter
 @Setter
@@ -58,6 +59,10 @@ public class Comment extends Auditable {
 
     @Column(name = "pinned", nullable = false)
     private boolean pinned = false;
+
+    /** Timestamp in video (in seconds) when this comment was made */
+    @Column(name = "timestamp_seconds")
+    private Integer timestampSeconds;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();

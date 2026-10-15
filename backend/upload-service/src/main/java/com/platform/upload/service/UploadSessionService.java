@@ -1,5 +1,10 @@
 package com.platform.upload.service;
 
+import com.platform.user.entity.Channel;
+import com.platform.user.entity.CreatorProfile;
+import com.platform.user.repository.ChannelRepository;
+import com.platform.user.repository.CreatorProfileRepository;
+
 import com.platform.common.dto.ApiErrorCodes;
 import com.platform.common.exception.BusinessException;
 import com.platform.common.exception.NotFoundException;
@@ -30,8 +35,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -56,8 +64,9 @@ public class UploadSessionService {
     @Value("${upload.max-file-size-gb:50}")
     private long maxFileSizeGB;
 
-    private static final long CHUNK_SIZE_BYTES = 256L * 1024 * 1024; // 256 MB
-    private static final long MAX_FILE_SIZE_BYTES = 50L * 1024 * 1024 * 1024; // 50 GB
+    private static final long MIN_CHUNK_SIZE_BYTES = 5L * 1024 * 1024;
+    private static final long MAX_CHUNK_SIZE_BYTES = 256L * 1024 * 1024;
+    private static final int MAX_MULTIPART_PARTS = 10_000;
     private static final int SESSION_TTL_HOURS = 24;
 
     @Transactional
@@ -65,7 +74,8 @@ public class UploadSessionService {
         UUID userId = currentUserAccessor.getCurrentUserId();
 
         // Validate file size
-        if (request.getTotalSize() > MAX_FILE_SIZE_BYTES) {
+        long configuredMaxFileSizeBytes = maxFileSizeGB * 1024L * 1024L * 1024L;
+        if (request.getTotalSize() <= 0 || request.getTotalSize() > configuredMaxFileSizeBytes) {
             throw new BusinessException(ApiErrorCodes.UPLOAD_FILE_TOO_LARGE,
                     org.springframework.http.HttpStatus.BAD_REQUEST,
                     "File size exceeds maximum allowed size of " + maxFileSizeGB + " GB");
@@ -86,8 +96,20 @@ public class UploadSessionService {
                     "Invalid video MIME type: " + request.getContentType());
         }
 
-        long chunkSize = request.getChunkSize() != null ? request.getChunkSize() : CHUNK_SIZE_BYTES;
-        int totalChunks = (int) Math.ceil((double) request.getTotalSize() / chunkSize);
+        long configuredDefaultChunkSize = defaultChunkSizeMB * 1024L * 1024L;
+        long chunkSize = request.getChunkSize() != null ? request.getChunkSize() : configuredDefaultChunkSize;
+        if (chunkSize < MIN_CHUNK_SIZE_BYTES || chunkSize > MAX_CHUNK_SIZE_BYTES) {
+            throw new BusinessException(ApiErrorCodes.UPLOAD_CHUNK_MISMATCH,
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Chunk size must be between 5 MB and 256 MB");
+        }
+        long totalChunksLong = (request.getTotalSize() + chunkSize - 1) / chunkSize;
+        if (totalChunksLong > MAX_MULTIPART_PARTS) {
+            throw new BusinessException(ApiErrorCodes.UPLOAD_CHUNK_MISMATCH,
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "File would require more than 10,000 multipart chunks");
+        }
+        int totalChunks = (int) totalChunksLong;
 
         // Create MinIO multipart upload
         String objectKey = "uploads/" + userId + "/" + UUID.randomUUID() + "/" + request.getFileName();
@@ -158,18 +180,21 @@ public class UploadSessionService {
 
         // Verify checksum if provided
         try (InputStream inputStream = file.getInputStream()) {
-            byte[] chunkBytes = inputStream.readAllBytes();
-            // Upload to MinIO
-            String etag = storageProvider.uploadPart("videos", session.getObjectKey(),
-                    session.getMinioUploadId(), partNumber, new java.io.ByteArrayInputStream(chunkBytes), file.getSize());
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            java.security.DigestInputStream digestStream = new java.security.DigestInputStream(inputStream, digest);
 
-            // Save chunk record
+            // Stream the multipart chunk directly to object storage. This avoids
+            // materializing a 256 MB chunk as a JVM byte[] under concurrent load.
+            String etag = storageProvider.uploadPart("videos", session.getObjectKey(),
+                    session.getMinioUploadId(), partNumber, digestStream, file.getSize());
+            String checksum = java.util.HexFormat.of().formatHex(digest.digest());
+
             UploadChunk chunk = new UploadChunk();
             chunk.setSessionId(sessionId);
             chunk.setPartNumber(partNumber);
             chunk.setSize(file.getSize());
             chunk.setEtag(etag);
-            chunk.setChecksum(ChecksumUtil.sha256(chunkBytes));
+            chunk.setChecksum(checksum);
             chunk.setMinioPartNumber(partNumber);
             chunkRepository.save(chunk);
 
@@ -181,7 +206,7 @@ public class UploadSessionService {
             log.debug("Uploaded chunk {} for session {}", partNumber, sessionId);
             return mapToStatusResponse(session);
 
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException e) {
             log.error("Failed to read chunk data", e);
             throw new BusinessException(ApiErrorCodes.UPLOAD_FAILED,
                     org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "Failed to process chunk");
@@ -262,6 +287,7 @@ public class UploadSessionService {
             video.setSourceFileSize(result.getSize());
             video.setSourceChecksum(result.getChecksum());
             video.setProcessingState(Video.ProcessingState.UPLOADED);
+            video.setModerationState(Video.ModerationState.PENDING);
         } else {
             // Create minimal video record
             video = new Video();
@@ -271,6 +297,7 @@ public class UploadSessionService {
             video.setSlug(com.platform.common.util.SlugUtil.slugify(extractTitleFromFilename(session.getFileName())));
             video.setVisibility(Video.Visibility.PRIVATE);
             video.setProcessingState(Video.ProcessingState.UPLOADED);
+            video.setModerationState(Video.ModerationState.PENDING);
             video.setSourceObjectKey(result.getKey());
             video.setSourceFileSize(result.getSize());
             video.setSourceChecksum(result.getChecksum());

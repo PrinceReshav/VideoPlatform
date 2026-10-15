@@ -57,4 +57,10 @@ public class VideoDetailResponse {
     private boolean isSubscribed;
     private boolean isLiked;
     private Long watchProgress; // seconds
+
+    /** Hashtags extracted from tags (for Feature 11: Hashtags & Mentions) */
+    private Set<String> hashtags;
+
+    /** Mentions extracted from description (for Feature 11: Hashtags & Mentions) */
+    private Set<String> mentions;
 }

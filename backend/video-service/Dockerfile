@@ -43,7 +43,7 @@ RUN addgroup -g 1000 -S appgroup && \
     adduser -u 1000 -S appuser -G appgroup
 
 # Copy built jar
-COPY --from=builder /app/video-service/target/*.jar app.jar
+COPY --from=builder /app/video-service/target/video-service-1.0.0-SNAPSHOT-exec.jar app.jar
 
 # Change ownership
 RUN chown -R appuser:appgroup /app

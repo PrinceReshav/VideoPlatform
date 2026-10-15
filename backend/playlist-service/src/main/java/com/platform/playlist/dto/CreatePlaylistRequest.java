@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * DTO for creating playlists (Feature 25: Advanced Playlists)
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -24,4 +27,13 @@ public class CreatePlaylistRequest {
     private String description;
 
     private Playlist.Visibility visibility = Playlist.Visibility.PRIVATE;
+
+    /** Whether this is a collaborative playlist (multiple users can edit) */
+    private boolean isCollaborative = false;
+
+    /** Whether auto-add based on rules is enabled */
+    private boolean autoAddEnabled = false;
+
+    /** Rules for auto-adding videos (JSON format) */
+    private String autoAddRules;
 }

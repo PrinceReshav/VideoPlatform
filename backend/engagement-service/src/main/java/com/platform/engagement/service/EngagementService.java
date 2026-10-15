@@ -109,11 +109,25 @@ public class EngagementService {
                     org.springframework.http.HttpStatus.FORBIDDEN, "Comments are disabled for this video");
         }
 
+        if (request.getParentId() != null) {
+            Comment parent = commentRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new NotFoundException(ApiErrorCodes.COMMENT_NOT_FOUND, "Parent comment not found"));
+            if (!videoId.equals(parent.getVideoId())) {
+                throw new BusinessException(ApiErrorCodes.ACCESS_DENIED,
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Reply must belong to the same video as its parent comment");
+            }
+            if (parent.isHidden()) {
+                throw new BusinessException(ApiErrorCodes.ACCESS_DENIED,
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Cannot reply to a hidden comment");
+            }
+        }
+
         Comment comment = new Comment();
         comment.setVideoId(videoId);
         comment.setUserId(userId);
         comment.setParentId(request.getParentId());
         comment.setContent(request.getContent());
+        comment.setTimestampSeconds(request.getTimestampSeconds());
         comment = commentRepository.save(comment);
 
         // Update reply count on parent
@@ -375,6 +389,7 @@ public class EngagementService {
                 .likeCount(comment.getLikeCount())
                 .replyCount(comment.getReplyCount())
                 .pinned(comment.isPinned())
+                .timestampSeconds(comment.getTimestampSeconds())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .replies(List.of())

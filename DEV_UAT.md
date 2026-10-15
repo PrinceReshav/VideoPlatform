@@ -14,13 +14,19 @@ Development uses a shared **file-based H2 database**. PostgreSQL is not used by 
 - MinIO: http://localhost:9000
 - Gateway: http://localhost:8080
 
-Start infrastructure:
+Start the H2 TCP server first (this does not reset or delete the database):
+
+```powershell
+.\scripts\start-h2-dev.ps1
+```
+
+Then start the supporting infrastructure:
 
 ```powershell
 docker compose -f docker-compose.dev.yml up -d
 ```
 
-Then run the backend modules locally with `SPRING_PROFILES_ACTIVE=dev`. The gateway is `backend/api-gateway`.
+Run the backend modules locally with `SPRING_PROFILES_ACTIVE=dev`. Start Auth Service before using user-relationship endpoints in `user-creator-service`; all services share the same development H2 database. The gateway is `backend/api-gateway`.
 
 ### Development credentials
 

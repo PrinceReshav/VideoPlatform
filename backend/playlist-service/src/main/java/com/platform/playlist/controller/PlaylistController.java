@@ -1,5 +1,7 @@
 package com.platform.playlist.controller;
 
+import com.platform.playlist.entity.PlaylistCollaborator;
+
 import com.platform.common.dto.PageResponse;
 import com.platform.playlist.dto.AddVideoToPlaylistRequest;
 import com.platform.playlist.dto.CreatePlaylistRequest;
@@ -91,5 +93,42 @@ public class PlaylistController {
     @GetMapping("/{playlistId}/items")
     public ResponseEntity<List<com.platform.playlist.entity.PlaylistItem>> getPlaylistItems(@PathVariable UUID playlistId) {
         return ResponseEntity.ok(playlistService.getPlaylistItems(playlistId));
+    }
+
+    /**
+     * Collaborator management endpoints (Feature 25: Advanced Playlists)
+     */
+    @PostMapping("/{playlistId}/collaborators")
+    public ResponseEntity<Void> addCollaborator(
+            @PathVariable UUID playlistId,
+            @RequestParam UUID userId,
+            @RequestParam String permissionLevel) {
+        PlaylistCollaborator.PermissionLevel level = PlaylistCollaborator.PermissionLevel.valueOf(permissionLevel);
+        playlistService.addCollaborator(playlistId, userId, level);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{playlistId}/collaborators/{userId}")
+    public ResponseEntity<Void> removeCollaborator(
+            @PathVariable UUID playlistId,
+            @PathVariable UUID userId) {
+        playlistService.removeCollaborator(playlistId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{playlistId}/collaborators")
+    public ResponseEntity<List<UUID>> getCollaborators(@PathVariable UUID playlistId) {
+        List<UUID> collaborators = playlistService.getCollaborators(playlistId);
+        return ResponseEntity.ok(collaborators);
+    }
+
+    @PutMapping("/{playlistId}/collaborators/{userId}/permission")
+    public ResponseEntity<Void> updateCollaboratorPermission(
+            @PathVariable UUID playlistId,
+            @PathVariable UUID userId,
+            @RequestParam String permissionLevel) {
+        PlaylistCollaborator.PermissionLevel level = PlaylistCollaborator.PermissionLevel.valueOf(permissionLevel);
+        playlistService.updateCollaboratorPermission(playlistId, userId, level);
+        return ResponseEntity.ok().build();
     }
 }

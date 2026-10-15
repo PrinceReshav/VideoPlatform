@@ -1,0 +1,2 @@
+VideoPlatform Live TV V8
+Playback compatibility + local/proxied logos + Bloom/trigram search

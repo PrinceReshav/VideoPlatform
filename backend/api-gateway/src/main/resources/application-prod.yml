@@ -1,0 +1,111 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  main:
+    web-application-type: reactive
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "${GATEWAY_ALLOWED_ORIGINS}"
+            allowed-methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+            allowed-headers: ["*"]
+            allow-credentials: true
+            max-age: 3600
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL}
+          predicates: [Path=/api/v1/auth/**]
+        - id: admin-user-service
+          uri: ${AUTH_SERVICE_URL}
+          predicates: [Path=/api/v1/admin/users/**]
+        - id: admin-video-service
+          uri: ${VIDEO_SERVICE_URL}
+          predicates: [Path=/api/v1/admin/videos/**]
+        - id: admin-moderation-service
+          uri: ${MODERATION_SERVICE_URL}
+          predicates: [Path=/api/v1/admin/reports/**]
+        - id: user-creator-service
+          uri: ${USER_SERVICE_URL}
+          predicates:
+            - "Path=/api/v1/users/**,/api/v1/creators/**,/api/v1/channels/**,/api/v1/categories/**,/api/v1/genres/**,/api/v1/languages/**,/api/v1/achievements/**,/api/v1/user-relationships/**,/api/v1/verification/**"
+        - id: video-service
+          uri: ${VIDEO_SERVICE_URL}
+          predicates: [Path=/api/v1/videos/**]
+        - id: video-version-service
+          uri: ${VIDEO_SERVICE_URL}
+          predicates: [Path=/api/v1/video-versions/**]
+        - id: live-stream-service
+          uri: ${VIDEO_SERVICE_URL}
+          predicates: [Path=/api/v1/live-streams/**]
+        - id: live-chat-service
+          uri: ${VIDEO_SERVICE_URL}
+          predicates: [Path=/api/v1/live-chat/**]
+        - id: offline-download-service
+          uri: ${VIDEO_SERVICE_URL}
+          predicates: [Path=/api/v1/offline-downloads/**]
+        - id: trending-service
+          uri: ${VIDEO_SERVICE_URL}
+          predicates: [Path=/api/v1/trending/**]
+        - id: abuse-report-service
+          uri: ${VIDEO_SERVICE_URL}
+          predicates: [Path=/api/v1/abuse-reports/**]
+        - id: video-operations-service
+          uri: ${VIDEO_SERVICE_URL}
+          predicates: [Path=/api/v1/operations/**]
+        - id: upload-service
+          uri: ${UPLOAD_SERVICE_URL}
+          predicates: [Path=/api/v1/uploads/**]
+        - id: search-service
+          uri: ${SEARCH_SERVICE_URL}
+          predicates: [Path=/api/v1/search/**]
+        - id: engagement-service
+          uri: ${ENGAGEMENT_SERVICE_URL}
+          predicates: [Path=/api/v1/engagement/**]
+        - id: saved-video-service
+          uri: ${ENGAGEMENT_SERVICE_URL}
+          predicates: [Path=/api/v1/saved-videos/**]
+        - id: recommendation-service
+          uri: ${ENGAGEMENT_SERVICE_URL}
+          predicates: [Path=/api/v1/recommendations/**]
+        - id: subscription-service
+          uri: ${SUBSCRIPTION_SERVICE_URL}
+          predicates: [Path=/api/v1/subscriptions/**]
+        - id: playlist-service
+          uri: ${PLAYLIST_SERVICE_URL}
+          predicates: [Path=/api/v1/playlists/**]
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL}
+          predicates: [Path=/api/v1/notifications/**]
+        - id: creator-studio-service
+          uri: ${CREATOR_STUDIO_SERVICE_URL}
+          predicates:
+            - "Path=/api/v1/creator-studios/**,/api/v1/studio-content/**,/api/v1/studio-invitations/**,/api/v1/studio-memberships/**,/api/v1/studio-live-sessions/**,/api/v1/comment-credits/**"
+        - id: analytics-service
+          uri: ${ANALYTICS_SERVICE_URL}
+          predicates: [Path=/api/v1/analytics/**]
+        - id: moderation-service
+          uri: ${MODERATION_SERVICE_URL}
+          predicates: [Path=/api/v1/moderation/**]
+        - id: live-tv-service
+          uri: ${LIVE_TV_SERVICE_URL}
+          predicates: [Path=/api/v1/live/**]
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never

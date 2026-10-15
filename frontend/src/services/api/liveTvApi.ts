@@ -4,8 +4,9 @@ import { http } from '../http';
  * Live-TV channel status.
  */
 export type LiveChannelStatus =
-  | 'online'
-  | 'offline'
+  | 'playable'
+  | 'degraded'
+  | 'no_source'
   | 'checking'
   | 'unknown';
 
@@ -76,6 +77,12 @@ export interface LiveTvResponse {
   empty: boolean;
 }
 
+export interface LiveTvReadiness {
+  ready: boolean;
+  syncInProgress: boolean;
+  channelCount: number;
+}
+
 export interface CountryInfo {
   code: string;
   name: string;
@@ -90,11 +97,55 @@ export interface CategoryInfo {
 export interface EpgProgram {
   channelId: string;
   title: string;
-  start: string;
-  stop: string;
+  startTime: string;
+  endTime: string;
   description?: string;
   category?: string;
   icon?: string;
+  season?: number;
+  episode?: number;
+  episodeTitle?: string;
+}
+
+export interface PlaybackAttempt {
+  url: string;
+  profile: string;
+  status: number;
+  responseTimeMs: number;
+  reason?: string | null;
+}
+
+export interface PlaybackDiagnostic {
+  channelId: string;
+  tvgId: string;
+  channelName: string;
+  classification: 'PLAYING' | 'UNAVAILABLE' | 'ERROR';
+  userMessage: string;
+  mainReason: string;
+  successfulUrl: string;
+  status: number;
+  attempts: PlaybackAttempt[];
+  checkedAt: string;
+}
+
+export interface StreamCandidateInfo {
+  url: string;
+  proxyUrl: string;
+  feedId?: string | null;
+  quality?: string | null;
+  status?: LiveChannelStatus | string;
+  /** True only when the provider explicitly permits browser HLS from the configured web origin. */
+  directBrowserCompatible?: boolean;
+}
+
+export interface YouTubeFallbackResponse {
+  enabled: boolean;
+  found: boolean;
+  videoId: string;
+  title: string;
+  channelTitle: string;
+  matchScore: number;
+  reason: string;
 }
 
 export interface EpgResponse {
@@ -604,6 +655,10 @@ function requireChannelId(
  * Live-TV API.
  */
 export const liveTvApi = {
+  async getReadiness(): Promise<LiveTvReadiness> {
+    return http.get<LiveTvReadiness>('/live/readiness');
+  },
+
   /**
    * ============================================================
    * CHANNELS
@@ -740,6 +795,26 @@ export const liveTvApi = {
     return http.get<LiveChannel>(
       `/live/channels/${encodeURIComponent(id)}`
     );
+  },
+
+  /**
+   * Capture/diagnose the complete upstream playback path after a playback error.
+   */
+  async getPlaybackDiagnostic(channelId: string): Promise<PlaybackDiagnostic> {
+    const id = requireChannelId(channelId);
+    return http.get<PlaybackDiagnostic>(
+      `/live/channels/${encodeURIComponent(id)}/playback-diagnostic`
+    );
+  },
+
+  async getStreamCandidates(channelId: string): Promise<StreamCandidateInfo[]> {
+    const id = requireChannelId(channelId);
+    return http.get<StreamCandidateInfo[]>(`/live/channels/${encodeURIComponent(id)}/stream-candidates`);
+  },
+
+  async getYouTubeFallback(channelId: string): Promise<YouTubeFallbackResponse> {
+    const id = requireChannelId(channelId);
+    return http.get<YouTubeFallbackResponse>(`/live/channels/${encodeURIComponent(id)}/youtube-fallback`);
   },
 
   /**

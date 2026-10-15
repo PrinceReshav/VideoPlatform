@@ -1,10 +1,21 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Sidebar } from '../components/layout/Sidebar';
 import { useUIStore } from '../store/uiStore';
 
 export function MainLayout() {
   const { sidebarOpen, sidebarCollapsed, setSidebarOpen } = useUIStore();
+  const location = useLocation();
+  const isLiveTv = location.pathname === '/live' || location.pathname.startsWith('/live/');
+
+  if (isLiveTv) {
+    return (
+      <div className="min-h-screen bg-[#07090d] text-white">
+        <Outlet />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col">
       <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />

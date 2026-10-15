@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: live-tv-service
+  namespace: video-platform-prod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: live-tv-service
+  template:
+    metadata:
+      labels:
+        app: live-tv-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8092"
+    spec:
+      containers:
+      - name: live-tv-service
+        image: ${REGISTRY}/${IMAGE_NAME}-live-tv-service:latest
+        ports:
+        - containerPort: 8092
+        envFrom:
+        - configMapRef:
+            name: video-platform-config
+        - secretRef:
+            name: video-platform-secrets
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: prod
+        - name: SERVER_PORT
+          value: "8092"
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://postgres:5432/video_platform?currentSchema=live_tv_schema
+        - name: SPRING_FLYWAY_ENABLED
+          value: "true"
+        - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+          value: validate
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8092
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8092
+          initialDelaySeconds: 20
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: live-tv-service
+  namespace: video-platform-prod
+spec:
+  selector:
+    app: live-tv-service
+  ports:
+  - port: 8092
+    targetPort: 8092
+  type: ClusterIP

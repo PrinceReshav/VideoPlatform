@@ -15,7 +15,10 @@ export interface LiveChannel {
   tvgLogo: string;
   groupTitle: string;
   hlsUrl: string;
-  status: 'online' | 'offline' | 'checking' | 'unknown';
+  status: 'playable' | 'degraded' | 'no_source' | 'checking' | 'unknown';
+  favorite?: boolean;
+  viewCount?: number;
+  accessType?: 'PUBLIC' | 'PROTECTED';
   lastChecked?: string;
 }
 
@@ -35,7 +38,7 @@ export interface LiveTvResponse {
 export interface CountryInfo {
   code: string;
   name: string;
-  flag: string;
+  flag?: string;
   channelCount: number;
 }
 
@@ -47,8 +50,8 @@ export interface CategoryInfo {
 export interface EpgProgram {
   channelId: string;
   title: string;
-  start: string;
-  stop: string;
+  startTime: string;
+  endTime: string;
   description?: string;
   category?: string;
   icon?: string;
@@ -61,33 +64,40 @@ export interface EpgResponse {
 }
 
 export const liveTvApi = {
-  getChannels: (params?: { 
-    country?: string; 
-    category?: string; 
+  getChannels: (params?: {
+    country?: string;
+    category?: string;
     search?: string;
     page?: number;
     size?: number;
-  }) => 
+    sort?: string;
+  }) =>
     http.get<LiveTvResponse>('/live/channels', { params }),
 
-  getCountries: () => 
-    http.get<CountryInfo[]>('/live/countries'),
+  getCountries: (params?: { category?: string; search?: string }) =>
+    http.get<CountryInfo[]>('/live/countries', { params }),
 
-  getCategories: () => 
-    http.get<CategoryInfo[]>('/live/categories'),
+  getCategories: (params?: { country?: string; search?: string }) =>
+    http.get<CategoryInfo[]>('/live/categories', { params }),
 
-  getChannel: (channelId: string) => 
+  getChannel: (channelId: string) =>
     http.get<LiveChannel>(`/live/channels/${channelId}`),
 
-  getEpg: (channelId: string, date?: string) => 
-    http.get<EpgResponse>(`/live/channels/${channelId}/epg`, { 
-      params: date ? { date } : {} 
+  getEpg: (channelId: string, date?: string) =>
+    http.get<EpgResponse>(`/live/channels/${channelId}/epg`, {
+      params: date ? { date } : {}
     }),
 
-  checkChannelStatus: (channelId: string) => 
+  checkChannelStatus: (channelId: string) =>
     http.post<{ status: LiveChannel['status'] }>(`/live/channels/${channelId}/check`),
 
-  getFeatured: () => 
+  toggleFavorite: (channelId: string) =>
+    http.post<LiveChannel>(`/live/channels/${channelId}/favorite`),
+
+  recordView: (channelId: string) =>
+    http.post<LiveChannel>(`/live/channels/${channelId}/view`),
+
+  getFeatured: () =>
     http.get<LiveChannel[]>('/live/featured'),
 
 };

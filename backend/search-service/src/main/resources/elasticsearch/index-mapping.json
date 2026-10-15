@@ -30,6 +30,11 @@
       "analyzer": "video_analyzer",
       "search_analyzer": "video_search_analyzer"
     },
+    "transcript": {
+      "type": "text",
+      "analyzer": "video_analyzer",
+      "search_analyzer": "video_search_analyzer"
+    },
     "creatorId": {
       "type": "keyword"
     },
@@ -106,6 +111,33 @@
     "isPublished": {
       "type": "boolean"
     },
+    "deleted": {
+      "type": "boolean"
+    },
+    "location": {
+      "type": "geo_point"
+    },
+    "countryCode": {
+      "type": "keyword"
+    },
+    "regionCode": {
+      "type": "keyword"
+    },
+    "cityName": {
+      "type": "keyword"
+    },
+    "engagementScore": {
+      "type": "double"
+    },
+    "watchTimeSeconds": {
+      "type": "integer"
+    },
+    "shares": {
+      "type": "integer"
+    },
+    "subscribersGained": {
+      "type": "integer"
+    },
     "createdAt": {
       "type": "date",
       "format": "strict_date_optional_time||epoch_millis"
@@ -116,9 +148,6 @@
     },
     "slug": {
       "type": "keyword"
-    },
-    "deleted": {
-      "type": "boolean"
     }
   }
 }

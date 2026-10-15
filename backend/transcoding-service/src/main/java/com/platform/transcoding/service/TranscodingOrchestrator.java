@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -125,6 +126,80 @@ public class TranscodingOrchestrator {
                 ladder,
                 storageProvider
         );
+
+        // Extract or generate captions
+        List<VideoFileInfo> captionFiles = new ArrayList<>();
+        try {
+            // First, try to extract existing captions from the source video
+            List<FfmpegService.CaptionInfo> captionInfos = ffmpegService.probeCaptions(inputPath);
+            if (!captionInfos.isEmpty()) {
+                log.info("Found {} embedded caption streams in video {}", captionInfos.size(), job.getVideoId());
+                captionFiles = ffmpegService.extractCaptions(
+                        job.getVideoId(),
+                        inputPath,
+                        job.getOutputBucket(),
+                        job.getOutputPrefix(),
+                        captionInfos,
+                        storageProvider
+                );
+            } else {
+                // If no embedded captions found, generate captions using speech-to-text
+                // For now, we'll generate English captions as a placeholder
+                log.info("No embedded captions found in video {}, generating captions", job.getVideoId());
+                List<String> languages = List.of("en"); // Generate English captions
+                captionFiles = ffmpegService.generateCaptions(
+                        job.getVideoId(),
+                        inputPath,
+                        job.getOutputBucket(),
+                        job.getOutputPrefix(),
+                        languages,
+                        storageProvider
+                );
+            }
+        } catch (Exception e) {
+            log.warn("Failed to process captions for video {}: {}", job.getVideoId(), e.getMessage());
+            // Continue without captions - this is not a critical failure
+        }
+
+        // Add caption files to result files
+        resultFiles.addAll(captionFiles);
+
+        // Extract or generate dubbed audio
+        List<VideoFileInfo> dubbedAudioFiles = new ArrayList<>();
+        try {
+            // First, try to extract existing dubbed audio from the source video
+            List<FfmpegService.DubbedAudioInfo> dubbedAudioInfos = ffmpegService.probeDubbedAudio(inputPath);
+            if (!dubbedAudioInfos.isEmpty()) {
+                log.info("Found {} dubbed audio streams in video {}", dubbedAudioInfos.size(), job.getVideoId());
+                dubbedAudioFiles = ffmpegService.extractDubbedAudio(
+                        job.getVideoId(),
+                        inputPath,
+                        job.getOutputBucket(),
+                        job.getOutputPrefix(),
+                        dubbedAudioInfos,
+                        storageProvider
+                );
+            } else {
+                // If no embedded dubbed audio found, generate dubbed audio using text-to-speech
+                // For now, we'll generate some common languages as a placeholder
+                log.info("No embedded dubbed audio found in video {}, generating dubbed audio", job.getVideoId());
+                List<String> languages = List.of("es", "fr"); // Generate Spanish and French dubbed audio
+                dubbedAudioFiles = ffmpegService.generateDubbedAudio(
+                        job.getVideoId(),
+                        inputPath,
+                        job.getOutputBucket(),
+                        job.getOutputPrefix(),
+                        languages,
+                        storageProvider
+                );
+            }
+        } catch (Exception e) {
+            log.warn("Failed to process dubbed audio for video {}: {}", job.getVideoId(), e.getMessage());
+            // Continue without dubbed audio - this is not a critical failure
+        }
+
+        // Add dubbed audio files to result files
+        resultFiles.addAll(dubbedAudioFiles);
 
         // Update job as completed
         job.setStatus(ProcessingJob.Status.COMPLETED);

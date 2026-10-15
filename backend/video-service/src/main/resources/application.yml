@@ -45,16 +45,17 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.platform.*"
-  redis:
-    host: ${SPRING_REDIS_HOST:localhost}
-    port: ${SPRING_REDIS_PORT:6379}
-    password: ${SPRING_REDIS_PASSWORD:}
-    timeout: 5000ms
-    lettuce:
-      pool:
-        max-active: 20
-        max-idle: 10
-        min-idle: 2
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 2
   elasticsearch:
     uris: ${ELASTICSEARCH_HOST:http://localhost:9200}
 
@@ -69,6 +70,13 @@ minio:
 video-service:
   url: ${VIDEO_SERVICE_URL:http://localhost:8083}
 
+logging:
+  level:
+    com.platform.video: DEBUG
+    org.springframework.kafka: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
 management:
   endpoints:
     web:
@@ -77,10 +85,9 @@ management:
   endpoint:
     health:
       show-details: always
-
-logging:
-  level:
-    com.platform.video: DEBUG
-    org.springframework.kafka: INFO
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  metrics:
+    enable:
+      http: true
+      jvm: true
+      logback: true
+      process: true

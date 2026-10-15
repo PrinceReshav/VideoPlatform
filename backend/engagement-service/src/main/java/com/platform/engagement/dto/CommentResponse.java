@@ -26,6 +26,8 @@ public class CommentResponse {
     private int likeCount;
     private int replyCount;
     private boolean pinned;
+    /** Timestamp in video (in seconds) when this comment was made */
+    private Integer timestampSeconds;
     private Instant createdAt;
     private Instant updatedAt;
     private List<CommentResponse> replies;

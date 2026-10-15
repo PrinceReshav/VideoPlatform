@@ -17,8 +17,14 @@ import org.springframework.data.elasticsearch.annotations.MultiField;
 import org.springframework.data.elasticsearch.annotations.Setting;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+/**
+ * Enhanced Video Search Document for Feature 10: Advanced Elasticsearch Search
+ * Adds support for transcript search, geographic search, and enhanced analytics
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -77,6 +83,14 @@ public class VideoSearchDocument {
             searchAnalyzer = "video_search_analyzer"
     )
     private String description;
+
+    /** Transcript/searchable text from video audio (for searching within video content) */
+    @Field(
+            type = FieldType.Text,
+            analyzer = "video_analyzer",
+            searchAnalyzer = "video_search_analyzer"
+    )
+    private String transcript;
 
     @Field(type = FieldType.Keyword)
     private String creatorId;
@@ -148,6 +162,19 @@ public class VideoSearchDocument {
     @Field(type = FieldType.Integer)
     private Integer commentCount;
 
+    /** Geographic data for location-based search */
+    // @Field(type = FieldType.GeoPoint)
+    private List<Double> location; // [lat, lon]
+
+    @Field(type = FieldType.Keyword)
+    private String countryCode;
+
+    @Field(type = FieldType.Keyword)
+    private String regionCode;
+
+    @Field(type = FieldType.Keyword)
+    private String cityName;
+
     @Field(
             type = FieldType.Date,
             format = DateFormat.date_optional_time
@@ -168,6 +195,19 @@ public class VideoSearchDocument {
 
     @Field(type = FieldType.Boolean)
     private Boolean deleted;
+
+    /** Enhanced engagement metrics for better ranking */
+    @Field(type = FieldType.Double)
+    private Double engagementScore; // Calculated engagement score for ranking
+
+    @Field(type = FieldType.Integer)
+    private Integer watchTimeSeconds; // Total watch time
+
+    @Field(type = FieldType.Integer)
+    private Integer shares; // Share count
+
+    @Field(type = FieldType.Integer)
+    private Integer subscribersGained; // Subscribers gained from this video
 
     @Field(
             type = FieldType.Date,

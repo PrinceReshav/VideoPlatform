@@ -2,10 +2,12 @@
 # Video Platform - Production Deployment Script
 # Usage: ./deploy-prod.sh [REGISTRY] [IMAGE_TAG]
 
-set -e
+set -euo pipefail
 
 REGISTRY=${1:-ghcr.io/your-org}
 IMAGE_TAG=${2:-latest}
+IMAGE_NAME=${IMAGE_NAME:-video-platform}
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NAMESPACE=video-platform-prod
 KUBECONFIG=${KUBECONFIG:-~/.kube/config}
 
@@ -42,7 +44,7 @@ check_prereqs() {
 build_images() {
     echo "Building Docker images..."
     
-    cd /path/to/video-platform
+    cd "$ROOT_DIR"
     
     # Build all services
     services=(
@@ -59,13 +61,17 @@ build_images() {
         "notification-service"
         "analytics-service"
         "moderation-service"
+        "live-tv-service"
         "frontend"
     )
     
     for service in "${services[@]}"; do
         echo "Building $service..."
-        docker build -t $REGISTRY/video-platform-$service:$IMAGE_TAG ./backend/$service 2>/dev/null || \
-        docker build -t $REGISTRY/video-platform-frontend:$IMAGE_TAG ./frontend 2>/dev/null || true
+        if [[ "$service" == "frontend" ]]; then
+            docker build -t "$REGISTRY/video-platform-frontend:$IMAGE_TAG" ./frontend
+        else
+            docker build -t "$REGISTRY/video-platform-$service:$IMAGE_TAG" ./backend/$service
+        fi
     done
     
     # Push images
@@ -112,6 +118,7 @@ deploy_k8s() {
         ${REGISTRY}/${IMAGE_NAME}-notification-service:latest=${REGISTRY}/video-platform-notification-service:$IMAGE_TAG \
         ${REGISTRY}/${IMAGE_NAME}-analytics-service:latest=${REGISTRY}/video-platform-analytics-service:$IMAGE_TAG \
         ${REGISTRY}/${IMAGE_NAME}-moderation-service:latest=${REGISTRY}/video-platform-moderation-service:$IMAGE_TAG \
+        ${REGISTRY}/${IMAGE_NAME}-live-tv-service:latest=${REGISTRY}/video-platform-live-tv-service:$IMAGE_TAG \
         ${REGISTRY}/${IMAGE_NAME}-frontend:latest=${REGISTRY}/video-platform-frontend:$IMAGE_TAG
     
     kustomize build . | kubectl apply -f -
@@ -122,6 +129,7 @@ deploy_k8s() {
     kubectl rollout status deployment/video-service -n video-platform-prod --timeout=300s
     kubectl rollout status deployment/upload-service -n video-platform-prod --timeout=300s
     kubectl rollout status deployment/transcoding-service -n video-platform-prod --timeout=300s
+    kubectl rollout status deployment/live-tv-service -n video-platform-prod --timeout=300s
     
     echo "Deployment complete!"
 }
@@ -144,6 +152,7 @@ health_check() {
         "notification-service:8089"
         "analytics-service:8090"
         "moderation-service:8091"
+        "live-tv-service:8092"
     )
     
     for svc in "${services[@]}"; do

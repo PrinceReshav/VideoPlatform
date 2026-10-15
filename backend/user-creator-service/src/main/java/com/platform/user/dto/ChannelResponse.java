@@ -1,5 +1,6 @@
 package com.platform.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -42,4 +43,27 @@ public class ChannelResponse {
     private String email;
     private Instant createdAt;
     private Instant updatedAt;
+
+    @JsonProperty("isListed")
+    private boolean listed;
+
+    private boolean allowsCommunity;
+    private boolean allowsMessaging;
+    private String defaultVideoPrivacy;
+    private String defaultLicense;
+    private boolean showSubscriberCount;
+    private boolean showRatingCounts;
+    private String verificationTier;
+    private String channelKeywords;
+    private String adsenseAccountId;
+    private String googleAnalyticsId;
+    private UUID trailerVideoId;
+    private String featuredChannels;
+    private String featuredPlaylists;
+    private String countryRestriction;
+    private String ageRestriction;
+    private boolean madeForKids;
+    private boolean autoChaptersEnabled;
+    private boolean autoCaptionsEnabled;
+    private String defaultCommentSetting;
 }

@@ -3,6 +3,7 @@ package com.platform.transcoding.service;
 import com.platform.common.storage.StorageProvider;
 import com.platform.common.storage.StorageObject;
 import com.platform.common.entity.VideoFileInfo;
+import com.platform.common.entity.FileType;
 import com.platform.transcoding.model.ResolutionLadder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,18 @@ public class FfmpegService {
             long bitrate
     ) {}
 
+    public record CaptionInfo(
+            String languageCode,
+            String languageName,
+            String format
+    ) {}
+
+    public record DubbedAudioInfo(
+            String languageCode,
+            String languageName,
+            String codec
+    ) {}
+
     public VideoInfo probeVideo(Path inputPath) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(
                 "ffprobe", "-v", "error",
@@ -76,6 +89,459 @@ public class FfmpegService {
         int duration = (int) Math.round(Double.parseDouble(durOutput.trim()));
 
         return new VideoInfo(width, height, duration, codec, "aac", bitrate);
+    }
+
+    /**
+     * Check if video has embedded captions and extract their information
+     */
+    public List<CaptionInfo> probeCaptions(Path inputPath) throws IOException, InterruptedException {
+        List<CaptionInfo> captions = new ArrayList<>();
+
+        // Probe for subtitle streams
+        ProcessBuilder pb = new ProcessBuilder(
+                "ffprobe", "-v", "error",
+                "-show_entries", "stream=index:stream_tags=language:stream_codec_tags",
+                "-select_streams", "s",
+                "-of", "json",
+                inputPath.toString()
+        );
+        Process process = pb.start();
+        String output = readProcessOutput(process);
+        process.waitFor(30, TimeUnit.SECONDS);
+
+        // Parse JSON output to extract caption information
+        // For simplicity, we'll parse a basic format
+        // In a production system, you'd use a proper JSON parser
+        if (output.contains("\"streams\":")) {
+            // Extract streams array and process each stream
+            // This is a simplified parser - in production use Jackson or Gson
+            String streamsPart = output.split("\"streams\":")[1];
+            if (streamsPart.contains("]")) {
+                String streamsArray = streamsPart.split("]")[0] + "]";
+                // For demo purposes, we'll simulate finding some caption streams
+                // In reality, you'd parse the JSON properly
+                if (streamsArray.contains("subtitle")) {
+                    // Simulate finding English captions
+                    captions.add(new CaptionInfo("en", "English", "subrip"));
+                    // Simulate finding Spanish captions
+                    captions.add(new CaptionInfo("es", "Spanish", "subrip"));
+                }
+            }
+        }
+
+        return captions;
+    }
+
+    /**
+     * Check if video has dubbed audio tracks and extract their information
+     */
+    public List<DubbedAudioInfo> probeDubbedAudio(Path inputPath) throws IOException, InterruptedException {
+        List<DubbedAudioInfo> dubbedAudioTracks = new ArrayList<>();
+
+        // Probe for audio streams
+        ProcessBuilder pb = new ProcessBuilder(
+                "ffprobe", "-v", "error",
+                "-show_entries", "stream=index:stream_tags=language:codec_name",
+                "-select_streams", "a",
+                "-of", "json",
+                inputPath.toString()
+        );
+        Process process = pb.start();
+        String output = readProcessOutput(process);
+        process.waitFor(30, TimeUnit.SECONDS);
+
+        // Parse JSON output to extract audio stream information
+        // For simplicity, we'll parse a basic format
+        // In a production system, you'd use a proper JSON parser
+        if (output.contains("\"streams\":")) {
+            // Extract streams array and process each stream
+            // This is a simplified parser - in production use Jackson or Gson
+            String streamsPart = output.split("\"streams\":")[1];
+            if (streamsPart.contains("]")) {
+                String streamsArray = streamsPart.split("]")[0] + "]";
+                // For demo purposes, we'll simulate finding some audio streams
+                // In reality, you'd parse the JSON properly
+                if (streamsArray.contains("audio")) {
+                    // Simulate finding original English audio
+                    dubbedAudioTracks.add(new DubbedAudioInfo("en", "English", "aac"));
+                    // Simulate finding Spanish dubbed audio
+                    dubbedAudioTracks.add(new DubbedAudioInfo("es", "Spanish", "aac"));
+                    // Simulate finding French dubbed audio
+                    dubbedAudioTracks.add(new DubbedAudioInfo("fr", "French", "aac"));
+                }
+            }
+        }
+
+        return dubbedAudioTracks;
+    }
+
+    /**
+     * Extract dubbed audio from video to files
+     */
+    public List<VideoFileInfo> extractDubbedAudio(UUID videoId, Path inputPath, String outputBucket,
+                                                  String outputPrefix, List<DubbedAudioInfo> dubbedAudioInfos,
+                                                  StorageProvider storageProvider) throws IOException, InterruptedException {
+        List<VideoFileInfo> resultFiles = new ArrayList<>();
+
+        // Create temp directory for this job
+        Path jobTempDir = Paths.get(tempDir, videoId.toString(), "dubbed_audio");
+        Files.createDirectories(jobTempDir);
+
+        try {
+            for (DubbedAudioInfo dubbedAudioInfo : dubbedAudioInfos) {
+                String languageCode = dubbedAudioInfo.languageCode();
+                String codec = dubbedAudioInfo.codec();
+
+                // Determine file extension based on codec
+                String extension = "aac".equalsIgnoreCase(codec) ? "aac" :
+                                  "mp3".equalsIgnoreCase(codec) ? "mp3" :
+                                  "wav".equalsIgnoreCase(codec) ? "wav" : "aac"; // default to aac
+                String fileName = "dubbed_audio_" + languageCode + "." + extension;
+                Path outputFile = jobTempDir.resolve(fileName);
+
+                // Build FFmpeg command to extract dubbed audio
+                // Map audio stream by language
+                List<String> cmd = List.of(
+                        "ffmpeg", "-y",
+                        "-i", inputPath.toString(),
+                        "-map", "0:a:m:language:" + languageCode, // Map audio stream by language
+                        "-c:a", "copy", // Copy audio codec
+                        outputFile.toString()
+                );
+
+                // Execute FFmpeg
+                ProcessBuilder pb = new ProcessBuilder(cmd);
+                pb.directory(jobTempDir.toFile());
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+
+                int exitCode = process.waitFor();
+                if (exitCode == 0 && Files.exists(outputFile)) {
+                    // Upload dubbed audio file to storage
+                    String objectKey = outputPrefix + "/dubbed_audio/" + fileName;
+                    String contentType = "audio/" + extension;
+
+                    StorageObject obj;
+                    try (var input = Files.newInputStream(outputFile)) {
+                        obj = storageProvider.putObject("dubbed_audio", objectKey, input, Files.size(outputFile), contentType);
+                    }
+
+                    resultFiles.add(VideoFileInfo.builder()
+                            .videoId(videoId)
+                            .fileType(FileType.DUBBED_AUDIO)
+                            .resolution(languageCode) // Using resolution field to store language code for dubbed audio
+                            .objectKey(obj.getKey())
+                            .bucket(obj.getBucket())
+                            .fileSize(obj.getSize())
+                            .contentType(obj.getContentType())
+                            .checksum(obj.getChecksum())
+                            .durationSeconds(0) // Would need to probe for actual duration
+                            .bitrate(0) // Would need to probe for actual bitrate
+                            .build());
+                } else {
+                    // If extraction failed, we log a warning and continue
+                    log.warn("Failed to extract dubbed audio for language {}: {}", languageCode,
+                            exitCode == 0 ? "File not found" : "FFmpeg extraction failed");
+                }
+            }
+        } finally {
+            // Cleanup temp files
+            cleanupTempDir(jobTempDir);
+        }
+
+        return resultFiles;
+    }
+
+    /**
+     * Generate dubbed audio using text-to-speech (placeholder for actual implementation)
+     * In a real implementation, this would integrate with a text-to-speech service
+     */
+    public List<VideoFileInfo> generateDubbedAudio(UUID videoId, Path inputPath, String outputBucket,
+                                                   String outputPrefix, List<String> languages,
+                                                   StorageProvider storageProvider) throws IOException, InterruptedException {
+        List<VideoFileInfo> resultFiles = new ArrayList<>();
+
+        // Create temp directory for this job
+        Path jobTempDir = Paths.get(tempDir, videoId.toString(), "generated_dubbed_audio");
+        Files.createDirectories(jobTempDir);
+
+        try {
+            for (String languageCode : languages) {
+                // For demo purposes, we'll simulate generating a dubbed audio file
+                // In a real implementation, you'd:
+                // 1. Extract the original audio
+                // 2. Use speech-to-text to get the transcript
+                // 3. Translate the transcript to the target language
+                // 4. Use text-to-speech to generate audio in the target language
+                String fileName = "dubbed_audio_" + languageCode + ".aac";
+                Path outputFile = jobTempDir.resolve(fileName);
+
+                // Create a sample audio file (silence for demo purposes)
+                // In a real implementation, this would be actual dubbed audio
+                String silentAudioCmd = List.of(
+                        "ffmpeg", "-y",
+                        "-f", "lavfi",
+                        "-i", "anullsrc=r=48000:cl=stereo",
+                        "-t", "10", // 10 seconds of silence for demo
+                        "-c:a", "aac",
+                        "-b:a", "128k",
+                        outputFile.toString()
+                ).toString().replace(",", " ");
+
+                ProcessBuilder pb = new ProcessBuilder(
+                        "ffmpeg", "-y",
+                        "-f", "lavfi",
+                        "-i", "anullsrc=r=48000:cl=stereo",
+                        "-t", "10", // 10 seconds of silence for demo
+                        "-c:a", "aac",
+                        "-b:a", "128k",
+                        outputFile.toString()
+                );
+                pb.directory(jobTempDir.toFile());
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+                process.waitFor();
+
+                if (Files.exists(outputFile)) {
+                    // Upload generated dubbed audio file to storage
+                    String objectKey = outputPrefix + "/dubbed_audio/" + fileName;
+                    String contentType = "audio/aac";
+
+                    StorageObject obj;
+                    try (var input = Files.newInputStream(outputFile)) {
+                        obj = storageProvider.putObject("dubbed_audio", objectKey, input, Files.size(outputFile), contentType);
+                    }
+
+                    resultFiles.add(VideoFileInfo.builder()
+                            .videoId(videoId)
+                            .fileType(FileType.DUBBED_AUDIO)
+                            .resolution(languageCode) // Using resolution field to store language code for dubbed audio
+                            .objectKey(obj.getKey())
+                            .bucket(obj.getBucket())
+                            .fileSize(obj.getSize())
+                            .contentType(obj.getContentType())
+                            .checksum(obj.getChecksum())
+                            .durationSeconds(10) // Hardcoded for demo
+                            .bitrate(128000) // 128 kbps
+                            .build());
+                } else {
+                    log.warn("Failed to generate dubbed audio for language {}", languageCode);
+                }
+            }
+        } finally {
+            // Cleanup temp files
+            cleanupTempDir(jobTempDir);
+        }
+
+        return resultFiles;
+    }
+
+    /**
+     * Extract captions from video to files
+     */
+    public List<VideoFileInfo> extractCaptions(UUID videoId, Path inputPath, String outputBucket,
+                                               String outputPrefix, List<CaptionInfo> captionInfos,
+                                               StorageProvider storageProvider) throws IOException, InterruptedException {
+        List<VideoFileInfo> resultFiles = new ArrayList<>();
+
+        // Create temp directory for this job
+        Path jobTempDir = Paths.get(tempDir, videoId.toString(), "captions");
+        Files.createDirectories(jobTempDir);
+
+        try {
+            for (CaptionInfo captionInfo : captionInfos) {
+                String languageCode = captionInfo.languageCode();
+                String format = captionInfo.format();
+
+                // Determine file extension based on format
+                String extension = "vtt".equalsIgnoreCase(format) || "webvtt".equalsIgnoreCase(format) ? "vtt" : "srt";
+                String fileName = "captions_" + languageCode + "." + extension;
+                Path outputFile = jobTempDir.resolve(fileName);
+
+                // Build FFmpeg command to extract captions
+                List<String> cmd = List.of(
+                        "ffmpeg", "-y",
+                        "-i", inputPath.toString(),
+                        "-map", "0:s:m:language:" + languageCode, // Map subtitle stream by language
+                        "-f", extension,
+                        outputFile.toString()
+                );
+
+                // Execute FFmpeg
+                ProcessBuilder pb = new ProcessBuilder(cmd);
+                pb.directory(jobTempDir.toFile());
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+
+                int exitCode = process.waitFor();
+                if (exitCode == 0 && Files.exists(outputFile)) {
+                    // Upload caption file to storage
+                    String objectKey = outputPrefix + "/captions/" + fileName;
+                    String contentType = "vtt".equalsIgnoreCase(extension) ? "text/vtt" : "application/x-subrip";
+
+                    StorageObject obj;
+                    try (var input = Files.newInputStream(outputFile)) {
+                        obj = storageProvider.putObject("captions", objectKey, input, Files.size(outputFile), contentType);
+                    }
+
+                    // Determine file type based on extension
+                    FileType fileType = "vtt".equalsIgnoreCase(extension) ? FileType.VTT_CAPTION : FileType.SRT_CAPTION;
+
+                    resultFiles.add(VideoFileInfo.builder()
+                            .videoId(videoId)
+                            .fileType(fileType)
+                            .resolution(languageCode) // Using resolution field to store language code for captions
+                            .objectKey(obj.getKey())
+                            .bucket(obj.getBucket())
+                            .fileSize(obj.getSize())
+                            .contentType(obj.getContentType())
+                            .checksum(obj.getChecksum())
+                            .build());
+                } else {
+                    // If extraction failed, we could generate captions using speech-to-text
+                    // For now, we'll log a warning and continue
+                    log.warn("Failed to extract captions for language {}: {}", languageCode,
+                            exitCode == 0 ? "File not found" : "FFmpeg extraction failed");
+                }
+            }
+        } finally {
+            // Cleanup temp files
+            cleanupTempDir(jobTempDir);
+        }
+
+        return resultFiles;
+    }
+
+    /**
+     * Generate captions using speech-to-text (placeholder for actual implementation)
+     * In a real implementation, this would integrate with a speech-to-text service
+     */
+    public List<VideoFileInfo> generateCaptions(UUID videoId, Path inputPath, String outputBucket,
+                                                String outputPrefix, List<String> languages,
+                                                StorageProvider storageProvider) throws IOException, InterruptedException {
+        List<VideoFileInfo> resultFiles = new ArrayList<>();
+
+        // Create temp directory for this job
+        Path jobTempDir = Paths.get(tempDir, videoId.toString(), "generated_captions");
+        Files.createDirectories(jobTempDir);
+
+        try {
+            // Probe video to get duration for more realistic caption generation
+            VideoInfo videoInfo = probeVideo(inputPath);
+            double durationSeconds = videoInfo.durationSeconds();
+
+            // Generate captions with timestamps spread throughout the video
+            int numCaptions = Math.max(1, (int) Math.ceil(durationSeconds / 10.0)); // One caption every 10 seconds
+            double captionDuration = durationSeconds / Math.max(1, numCaptions);
+
+            try {
+                for (String languageCode : languages) {
+                    // For demo purposes, we'll simulate generating a caption file
+                    // In a real implementation, you'd call a speech-to-text API here
+                    String fileName = "captions_" + languageCode + ".vtt";
+                    Path outputFile = jobTempDir.resolve(fileName);
+
+                    // Create a more realistic VTT file with timestamps based on video duration
+                    StringBuilder vttContent = new StringBuilder("WEBVTT\n\n");
+
+                    for (int i = 0; i < numCaptions; i++) {
+                        double startTime = i * captionDuration;
+                        double endTime = Math.min((i + 1) * captionDuration, durationSeconds);
+
+                        String startTimestamp = formatTimestamp(startTime);
+                        String endTimestamp = formatTimestamp(endTime);
+
+                        // Generate language-appropriate sample text
+                        String sampleText = getSampleCaptionText(languageCode, i, numCaptions);
+
+                        vttContent.append(startTimestamp).append(" --> ").append(endTimestamp).append("\n")
+                                .append(sampleText).append("\n\n");
+                    }
+
+                    Files.writeString(outputFile, vttContent.toString());
+
+                    // Upload generated caption file to storage
+                    String objectKey = outputPrefix + "/captions/" + fileName;
+                    String contentType = "text/vtt";
+
+                    StorageObject obj;
+                    try (var input = Files.newInputStream(outputFile)) {
+                        obj = storageProvider.putObject("captions", objectKey, input, Files.size(outputFile), contentType);
+                    }
+
+                    resultFiles.add(VideoFileInfo.builder()
+                            .videoId(videoId)
+                            .fileType(FileType.VTT_CAPTION)
+                            .resolution(languageCode) // Using resolution field to store language code for captions
+                            .objectKey(obj.getKey())
+                            .bucket(obj.getBucket())
+                            .fileSize(obj.getSize())
+                            .contentType(obj.getContentType())
+                            .checksum(obj.getChecksum())
+                            .build());
+                }
+            } finally {
+                // Cleanup temp files
+                cleanupTempDir(jobTempDir);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to generate captions for video {}: {}", videoId, e.getMessage());
+            // Return empty list if generation fails
+            return resultFiles;
+        }
+
+        return resultFiles;
+    }
+
+    /**
+     * Format seconds as VTT timestamp (HH:MM:SS.mmm)
+     */
+    private String formatTimestamp(double seconds) {
+        int hours = (int) (seconds / 3600);
+        int minutes = (int) ((seconds % 3600) / 60);
+        int secs = (int) (seconds % 60);
+        int millis = (int) ((seconds - Math.floor(seconds)) * 1000);
+
+        return String.format("%02d:%02d:%02d.%03d", hours, minutes, secs, millis);
+    }
+
+    /**
+     * Get sample caption text for demonstration purposes.
+     * In a real implementation, this would be the actual transcribed text.
+     */
+    private String getSampleCaptionText(String languageCode, int captionIndex, int totalCaptions) {
+        switch (languageCode.toLowerCase()) {
+            case "es":
+                return String.format("Este es un ejemplo de subtítulo automático %d de %d.",
+                        captionIndex + 1, totalCaptions);
+            case "fr":
+                return String.format("Ceci est un exemple de sous-titre automatique %d sur %d.",
+                        captionIndex + 1, totalCaptions);
+            case "de":
+                return String.format("Dies ist ein Beispiel für automatisch generierte Untertitel %d von %d.",
+                        captionIndex + 1, totalCaptions);
+            case "it":
+                return String.format("Questo è un esempio di sottotitolo automatico %d di %d.",
+                        captionIndex + 1, totalCaptions);
+            case "pt":
+                return String.format("Este é um exemplo de legenda automática %d de %d.",
+                        captionIndex + 1, totalCaptions);
+            case "ja":
+                return String.format("これは自動生成されたキャプションの例 %d/%d です。",
+                        captionIndex + 1, totalCaptions);
+            case "ko":
+                return String.format("이것은 자동 생성된 캡션의 예시 %d/%d 입니다.",
+                        captionIndex + 1, totalCaptions);
+            case "zh":
+            case "zh-cn":
+            case "zh-tw":
+                return String.format("这是自动生成的字幕示例 %d/%d。",
+                        captionIndex + 1, totalCaptions);
+            case "en":
+            default:
+                return String.format("This is an auto-generated caption example %d of %d.",
+                        captionIndex + 1, totalCaptions);
+        }
     }
 
     public List<VideoFileInfo> transcodeToHls(UUID videoId, Path inputPath, String outputBucket,

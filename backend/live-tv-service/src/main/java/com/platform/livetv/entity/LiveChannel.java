@@ -2,13 +2,14 @@ package com.platform.livetv.entity;
 
 import com.platform.common.audit.Auditable;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import org.springframework.data.domain.Persistable;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "live_channels", schema = "live_tv_schema",
@@ -20,11 +21,12 @@ import java.util.UUID;
                 @Index(name = "idx_live_channels_name", columnList = "name"),
                 @Index(name = "idx_live_channels_tvg_id", columnList = "tvg_id"),
                 @Index(name = "idx_live_channels_favorite", columnList = "is_favorite"),
-                @Index(name = "idx_live_channels_deleted", columnList = "deleted")
+                @Index(name = "idx_live_channels_deleted", columnList = "deleted"),
+                @Index(name = "idx_live_channels_deleted_country", columnList = "deleted, country_code"),
+                @Index(name = "idx_live_channels_deleted_category", columnList = "deleted, category"),
+                @Index(name = "idx_live_channels_deleted_name", columnList = "deleted, name")
         })
-@Getter
-@Setter
-public class LiveChannel extends Auditable {
+public class LiveChannel extends Auditable implements Persistable<UUID> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -46,7 +48,21 @@ public class LiveChannel extends Auditable {
     @Column(name = "category", nullable = false, length = 100)
     private String category;
 
-    @Column(name = "logo", length = 500)
+    /** All IPTV-org category memberships. `category` remains the primary display category. */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "live_channel_categories",
+            schema = "live_tv_schema",
+            joinColumns = @JoinColumn(name = "channel_id", nullable = false),
+            indexes = {
+                    @Index(name = "idx_live_channel_categories_category", columnList = "category"),
+                    @Index(name = "idx_live_channel_categories_channel", columnList = "channel_id")
+            }
+    )
+    @Column(name = "category", nullable = false, length = 100)
+    private Set<String> categories = new LinkedHashSet<>();
+
+    @Column(name = "logo", columnDefinition = "TEXT")
     private String logo;
 
     @Column(name = "url", length = 4096)
@@ -65,7 +81,7 @@ public class LiveChannel extends Auditable {
     @Column(name = "tvg_name", length = 255)
     private String tvgName;
 
-    @Column(name = "tvg_logo", length = 500)
+    @Column(name = "tvg_logo", columnDefinition = "TEXT")
     private String tvgLogo;
 
     @Column(name = "group_title", length = 255)
@@ -90,11 +106,14 @@ public class LiveChannel extends Auditable {
     @Column(name = "view_count", nullable = false)
     private long viewCount = 0;
 
-    @Column(name = "epg_url", length = 500)
+    @Column(name = "stream_candidate_count", nullable = false)
+    private int streamCandidateCount = 0;
+
+    @Column(name = "epg_url", columnDefinition = "TEXT")
     private String epgUrl;
 
     public enum StreamStatus {
-        ONLINE, OFFLINE, CHECKING, UNKNOWN;
+        PLAYABLE, DEGRADED, NO_SOURCE, CHECKING, UNKNOWN;
 
         @JsonValue
         public String toJson() {
@@ -103,14 +122,14 @@ public class LiveChannel extends Auditable {
     }
 
     public void markOnline(int responseTimeMs) {
-        this.status = StreamStatus.ONLINE;
+        this.status = StreamStatus.PLAYABLE;
         this.lastChecked = Instant.now();
         this.responseTimeMs = responseTimeMs;
         this.checkError = null;
     }
 
     public void markOffline(String error) {
-        this.status = StreamStatus.OFFLINE;
+        this.status = StreamStatus.NO_SOURCE;
         this.lastChecked = Instant.now();
         this.checkError = error;
         this.responseTimeMs = null;
@@ -152,4 +171,57 @@ public class LiveChannel extends Auditable {
     public void toggleFavorite() {
         this.favorite = !this.favorite;
     }
+    @Override
+    @Transient
+    public boolean isNew() {
+        return id == null;
+    }
+
+    public UUID getId() { return id; }
+    public void setId(UUID v) { this.id = v; }
+    public String getName() { return name; }
+    public void setName(String v) { this.name = v; }
+    public String getCountry() { return country; }
+    public void setCountry(String v) { this.country = v; }
+    public String getCountryCode() { return countryCode; }
+    public void setCountryCode(String v) { this.countryCode = v; }
+    public String getLanguage() { return language; }
+    public void setLanguage(String v) { this.language = v; }
+    public String getCategory() { return category; }
+    public void setCategory(String v) { this.category = v; }
+    public Set<String> getCategories() { return categories; }
+    public void setCategories(Set<String> v) { this.categories = v == null ? new LinkedHashSet<>() : new LinkedHashSet<>(v); }
+    public String getLogo() { return logo; }
+    public void setLogo(String v) { this.logo = v; }
+    public String getUrl() { return url; }
+    public void setUrl(String v) { this.url = v; }
+    public String getHlsUrl() { return hlsUrl; }
+    public void setHlsUrl(String v) { this.hlsUrl = v; }
+    public boolean isNsfw() { return nsfw; }
+    public void setNsfw(boolean v) { this.nsfw = v; }
+    public String getTvgId() { return tvgId; }
+    public void setTvgId(String v) { this.tvgId = v; }
+    public String getTvgName() { return tvgName; }
+    public void setTvgName(String v) { this.tvgName = v; }
+    public String getTvgLogo() { return tvgLogo; }
+    public void setTvgLogo(String v) { this.tvgLogo = v; }
+    public String getGroupTitle() { return groupTitle; }
+    public void setGroupTitle(String v) { this.groupTitle = v; }
+    public StreamStatus getStatus() { return status; }
+    public void setStatus(StreamStatus v) { this.status = v; }
+    public Instant getLastChecked() { return lastChecked; }
+    public void setLastChecked(Instant v) { this.lastChecked = v; }
+    public String getCheckError() { return checkError; }
+    public void setCheckError(String v) { this.checkError = v; }
+    public Integer getResponseTimeMs() { return responseTimeMs; }
+    public void setResponseTimeMs(Integer v) { this.responseTimeMs = v; }
+    public boolean isFavorite() { return favorite; }
+    public void setFavorite(boolean v) { this.favorite = v; }
+    public long getViewCount() { return viewCount; }
+    public void setViewCount(long v) { this.viewCount = v; }
+    public int getStreamCandidateCount() { return streamCandidateCount; }
+    public void setStreamCandidateCount(int v) { this.streamCandidateCount = v; }
+    public String getEpgUrl() { return epgUrl; }
+    public void setEpgUrl(String v) { this.epgUrl = v; }
+
 }

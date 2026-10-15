@@ -21,6 +21,8 @@ public interface WatchHistoryRepository extends JpaRepository<WatchHistory, UUID
 
     List<WatchHistory> findByUserIdAndProgressPercentGreaterThan(UUID userId, int progress);
 
+    List<WatchHistory> findByUserId(UUID userId);
+
     List<WatchHistory> findByUserIdAndCompletedTrue(UUID userId);
 
     long countByUserId(UUID userId);

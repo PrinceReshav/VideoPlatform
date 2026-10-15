@@ -1,0 +1,196 @@
+.live-tv-page{min-height:100vh;animation:liveTvPageIn .22s ease-out both;background:#06080c;color:#f8fafc;overflow:hidden;display:flex;flex-direction:column;font-family:var(--font-sans)}
+.live-tv-topbar{height:64px;flex:0 0 64px;background:rgba(11,14,20,.96);border-bottom:1px solid #242a33;display:flex;align-items:center;gap:24px;padding:0 18px;position:relative;z-index:20}
+.live-tv-brand{display:flex;align-items:center;gap:10px;min-width:245px}.live-tv-brand strong{display:block;font-size:17px;letter-spacing:-.02em}.live-tv-brand span{display:block;color:#67c9ff;font-size:9px;font-weight:800;letter-spacing:.18em;margin-top:1px}.live-tv-brand-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#72c83d;color:#081006;box-shadow:0 0 24px rgba(114,200,61,.25)}.live-tv-menu-button,.live-tv-icon-button{border:0;background:transparent;color:#dbe4ee;display:grid;place-items:center;cursor:pointer}.live-tv-menu-button{width:34px;height:34px;border-radius:9px}.live-tv-menu-button:hover,.live-tv-icon-button:hover{background:#1b222c}.live-tv-search-wrap{height:40px;max-width:720px;flex:1;margin:0 auto;background:#151a21;border:1px solid #2a323d;border-radius:22px;display:flex;align-items:center;padding:0 14px;color:#6f7b8b}.live-tv-search-wrap:focus-within{border-color:#4b91b9;box-shadow:0 0 0 3px rgba(75,145,185,.12)}.live-tv-search-wrap input{flex:1;background:transparent;border:0;outline:0;color:#f8fafc;font-size:14px;margin-left:9px}.live-tv-search-wrap input::placeholder{color:#697586}.live-tv-search-wrap button{border:0;background:transparent;color:#8290a2;display:grid;place-items:center;cursor:pointer}.live-tv-top-actions{display:flex;align-items:center;gap:10px;min-width:170px;justify-content:flex-end}.live-tv-online-pill{font-size:10px;font-weight:800;letter-spacing:.12em;color:#9ce36f;display:flex;align-items:center;gap:7px}.live-tv-online-pill span{width:7px;height:7px;border-radius:50%;background:#76cf45;box-shadow:0 0 10px #76cf45}.live-tv-workspace{display:grid;grid-template-columns:245px minmax(0,1fr) 350px;min-height:0;flex:1;height:calc(100vh - 64px)}
+.live-tv-category-sidebar{background:#101318;border-right:1px solid #242a33;padding:17px 10px;display:flex;flex-direction:column;min-height:0}.live-tv-sidebar-title{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:#677386;font-weight:800;padding:0 12px 9px}.live-tv-sidebar-divider{height:1px;background:#252b34;margin:12px 8px 17px}.live-tv-sidebar-scroll{overflow:auto;min-height:0;scrollbar-width:thin}.live-tv-nav-item{width:100%;height:42px;border:0;background:transparent;color:#aeb8c5;border-radius:9px;display:flex;align-items:center;gap:12px;padding:0 11px;cursor:pointer;text-align:left;margin-bottom:3px;transition:.16s}.live-tv-nav-item:hover{background:#1b2129;color:#eef4fa}.live-tv-nav-item.active{background:#252d37;color:#fff;box-shadow:inset 3px 0 #72c83d}.live-tv-nav-item span{font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.live-tv-nav-item small{font-size:10px;color:#6e7a89}.live-tv-nav-item.active small{color:#a8d88d}.live-tv-nav-icon{width:18px;height:18px;flex:0 0 18px}.live-tv-reset-button{margin-top:auto;border:1px solid #2a323d;background:#151a21;color:#8f9aaa;border-radius:9px;height:36px;font-size:12px;font-weight:700;cursor:pointer}.live-tv-reset-button:hover{color:#fff;background:#1b222c}
+.live-tv-main{min-width:0;min-height:0;display:flex;flex-direction:column;background:#030507}.live-tv-globe-panel{position:relative;flex:1;min-height:0;overflow:hidden;background:radial-gradient(circle at 50% 52%,#111d2d 0,#070c13 38%,#020407 76%)}.live-tv-globe-stars{position:absolute;inset:0;opacity:.75;background-image:radial-gradient(circle,#b7e8ff 1px,transparent 1px),radial-gradient(circle,#fff 1px,transparent 1px);background-size:137px 137px,251px 251px;background-position:20px 34px,87px 13px}.live-tv-globe-heading{position:absolute;z-index:3;top:22px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:flex-start}.live-tv-eyebrow{display:inline-flex;align-items:center;gap:6px;color:#65c7ff;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.13em}.live-tv-globe-heading h1{font-size:24px;line-height:1.15;margin-top:7px;color:#f4f8fc}.live-tv-globe-heading p{margin-top:5px;color:#7d8998;font-size:12px}.live-tv-local-time{text-align:right}.live-tv-local-time span{display:block;color:#657181;text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:800}.live-tv-local-time strong{font-size:16px;color:#dbe5ef;margin-top:4px;display:block}.live-tv-globe-stage{position:absolute;inset:70px 0 65px;display:grid;place-items:center}.live-tv-globe-glow{position:absolute;width:min(58vw,560px);height:min(58vw,560px);border-radius:50%;background:radial-gradient(circle,rgba(64,154,215,.18),rgba(64,154,215,.06) 46%,transparent 70%);filter:blur(8px)}.live-tv-globe{width:min(48vw,455px);height:min(48vw,455px);max-width:455px;max-height:455px;border-radius:50%;overflow:hidden;position:relative;background:radial-gradient(circle at 32% 25%,#24465a 0,#07121a 48%,#010306 76%);box-shadow:0 0 0 1px rgba(95,186,241,.55),0 0 45px rgba(42,136,197,.25),inset -35px -28px 65px rgba(0,0,0,.78);transform:perspective(1000px) rotateX(4deg);isolation:isolate}.live-tv-globe:before{content:"";position:absolute;inset:-2px;border-radius:50%;background:radial-gradient(circle at 30% 24%,rgba(255,255,255,.16),transparent 22%),radial-gradient(circle at 72% 78%,rgba(0,0,0,.75),transparent 52%);z-index:2;pointer-events:none}.live-tv-globe:after{content:"";position:absolute;inset:3%;border-radius:50%;border:1px solid rgba(124,205,255,.22);box-shadow:inset 18px 0 35px rgba(73,178,231,.07),inset -30px -8px 55px rgba(0,0,0,.72);z-index:3;pointer-events:none}.live-tv-globe img{width:100%;height:100%;object-fit:cover;display:block;opacity:.88;transform-origin:center;backface-visibility:hidden;animation:liveTvGlobeDrift 22s ease-in-out infinite;will-change:transform,filter}.live-tv-globe-shine{position:absolute;inset:0;border-radius:50%;background:linear-gradient(108deg,rgba(255,255,255,.11),transparent 31%,rgba(0,0,0,.18) 63%,rgba(0,0,0,.66) 100%);z-index:4;pointer-events:none}.live-tv-globe-orbit{position:absolute;border:1px solid rgba(91,181,232,.17);border-radius:50%;width:min(56vw,520px);height:min(17vw,155px);transform:rotate(-18deg)}.orbit-one{margin-top:45px}.orbit-two{transform:rotate(58deg);width:min(17vw,155px);height:min(56vw,520px)}.live-tv-country-strip{position:absolute;z-index:5;left:22px;right:22px;bottom:16px;display:flex;gap:7px;overflow:auto;padding:3px;scrollbar-width:none}.live-tv-country-strip::-webkit-scrollbar{display:none}.live-tv-country-chip{flex:0 0 auto;border:1px solid #28323e;background:rgba(13,18,25,.86);color:#9eabb9;border-radius:9px;padding:7px 10px;display:flex;align-items:center;gap:6px;cursor:pointer}.live-tv-country-chip:hover,.live-tv-country-chip.active{border-color:#5b9a45;background:#1b2a1a;color:#f4f8ee}.live-tv-country-chip strong{font-size:10px}.live-tv-country-chip small{font-size:9px;color:#6f7d8d}.live-tv-bottom-toolbar{height:50px;flex:0 0 50px;border-top:1px solid #242a33;background:#0c1015;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:12px}.live-tv-filter-summary{display:flex;gap:8px;overflow:hidden}.live-tv-filter-summary span{border:1px solid #272f39;background:#131920;color:#8e9aaa;border-radius:6px;padding:5px 8px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.live-tv-sort-controls{display:flex;align-items:center;gap:7px;color:#657182;font-size:10px;white-space:nowrap}.live-tv-sort-controls select,.live-tv-sort-controls button{height:30px;border:1px solid #2a323d;background:#151a21;color:#b6c1ce;border-radius:6px;padding:0 9px;font-size:11px}.live-tv-sort-controls button{display:flex;align-items:center;gap:4px;cursor:pointer}
+.live-tv-channel-panel{background:#15191e;border-left:1px solid #242a33;display:flex;flex-direction:column;min-height:0}.live-tv-channel-panel-header{height:82px;flex:0 0 82px;border-bottom:1px solid #2b3139;padding:14px 17px;display:flex;align-items:center;justify-content:space-between}.live-tv-channel-panel-header h2{font-size:18px;color:#e8edf2;margin-top:5px}.live-tv-panel-count{font-size:11px;color:#8c99a8;background:#20262d;border-radius:999px;padding:5px 8px}.live-tv-channel-list{flex:1;min-height:0;overflow:auto;padding:5px 7px;scrollbar-width:thin;scrollbar-color:#343d47 transparent}.live-tv-channel-row{min-height:66px;border-bottom:1px solid #232930;display:flex;align-items:center;gap:8px;padding:7px 5px;border-radius:8px;transition:.15s}.live-tv-channel-row:hover{background:#1c2229}.live-tv-channel-row.is-playing{background:#202a25;box-shadow:inset 2px 0 #72c83d}.live-tv-channel-play{width:44px;height:44px;flex:0 0 44px;border:0;background:#222a32;border-radius:7px;position:relative;display:grid;place-items:center;overflow:hidden;cursor:pointer}.live-tv-channel-play img{width:100%;height:100%;object-fit:contain;background:#222a32}.live-tv-channel-play-overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.48);color:white;opacity:0;transition:.15s}.live-tv-channel-play:hover .live-tv-channel-play-overlay{opacity:1}.live-tv-channel-copy{min-width:0;flex:1;background:transparent;border:0;text-align:left;color:inherit;cursor:pointer}.live-tv-channel-title-line{display:flex;align-items:center;gap:7px}.live-tv-channel-name{font-size:12px;font-weight:650;color:#dbe2e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.live-tv-status-dot{width:5px;height:5px;flex:0 0 5px;border-radius:50%}.live-tv-channel-meta{display:flex;gap:8px;margin-top:5px;color:#687482;font-size:9px;white-space:nowrap;overflow:hidden}.live-tv-channel-meta span{overflow:hidden;text-overflow:ellipsis}.live-tv-heart{color:#697687!important;flex:0 0 auto}.live-tv-heart:hover{color:#fda4af!important}.live-tv-pagination{height:50px;flex:0 0 50px;border-top:1px solid #2b3139;padding:0 10px;display:flex;align-items:center;justify-content:space-between;color:#687585;font-size:10px}.live-tv-pagination div{display:flex;gap:5px}.live-tv-pagination button{width:29px;height:29px;border:1px solid #2b333d;background:#191f26;color:#9ba8b6;border-radius:6px;display:grid;place-items:center;cursor:pointer}.live-tv-pagination button:disabled{opacity:.3;cursor:not-allowed}.live-tv-channel-skeleton{height:66px;border-bottom:1px solid #232930;display:flex;align-items:center;gap:10px;padding:7px}.live-tv-channel-skeleton>span{width:44px;height:44px;border-radius:7px;background:#232a32;animation:liveTvPulse 1.2s infinite}.live-tv-channel-skeleton>div{flex:1}.live-tv-channel-skeleton b,.live-tv-channel-skeleton i{display:block;background:#232a32;height:8px;border-radius:4px;animation:liveTvPulse 1.2s infinite}.live-tv-channel-skeleton b{width:70%;margin-bottom:8px}.live-tv-channel-skeleton i{width:45%;margin-top:5px}.live-tv-panel-empty{height:100%;min-height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#6f7c8b;padding:30px;gap:8px}.live-tv-panel-empty strong{color:#b7c2ce;font-size:13px}.live-tv-panel-empty p{color:#697687;font-size:11px}.live-tv-fetching{position:fixed;z-index:50;right:20px;bottom:18px;background:#1c232b;border:1px solid #34404c;border-radius:999px;padding:8px 12px;display:flex;align-items:center;gap:7px;color:#b9c5d1;font-size:10px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.live-tv-player-modal{position:fixed;inset:0;z-index:10000;pointer-events:none;display:flex;align-items:center;justify-content:center;padding:24px}.live-tv-player-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);cursor:pointer;pointer-events:auto}.live-tv-player-card{position:relative;z-index:2;width:min(1080px,calc(100vw - 48px));max-height:calc(100vh - 48px);background:#10151b;border:1px solid #303a46;border-radius:15px;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.72);display:flex;flex-direction:column;pointer-events:auto;animation:liveTvModalIn .18s ease-out both}.live-tv-player-mode-fullscreen{padding:0}.live-tv-player-mode-fullscreen .live-tv-player-card{width:100vw;height:100vh;max-height:none;border-radius:0;border:0}.live-tv-player-mode-mini{align-items:flex-end;justify-content:flex-end;padding:18px;pointer-events:none}.live-tv-player-mode-mini .live-tv-player-card{width:min(390px,calc(100vw - 24px));max-height:none;border-radius:12px;box-shadow:0 22px 70px rgba(0,0,0,.72)}.live-tv-player-mode-mini .live-tv-player-footer{display:none}.live-tv-player-mode-mini .live-tv-player-header{height:52px;padding:0 9px}.live-tv-player-mode-mini .live-tv-player-channel img{width:30px;height:30px}.live-tv-player-mode-mini .live-tv-player-channel h2{font-size:13px}.live-tv-player-mode-mini .live-tv-player-channel span{font-size:7px}.live-tv-player-mode-mini .live-tv-player-frame{aspect-ratio:16/9}.live-tv-player-header{height:64px;flex:0 0 64px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid #29313b;background:#10151b}.live-tv-player-window-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}.live-tv-player-window-actions button{border:1px solid #28323d;background:#1a2027;color:#aab6c3;border-radius:8px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer}.live-tv-player-window-actions button:hover{background:#26303b;color:#fff}.live-tv-player-channel{display:flex;align-items:center;gap:10px;min-width:0;margin-right:10px}.live-tv-player-channel img{width:40px;height:40px;object-fit:contain;border-radius:8px;background:#1c232b;flex:0 0 40px}.live-tv-player-channel>div{min-width:0}.live-tv-player-channel span{display:flex;align-items:center;gap:6px;color:#75d34d;font-size:9px;font-weight:800;letter-spacing:.12em}.live-tv-player-channel span i{width:6px;height:6px;border-radius:50%;background:#75d34d}.live-tv-player-channel h2{font-size:16px;color:#f4f7fa;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.live-tv-player-frame{position:relative;flex:1;min-height:0;aspect-ratio:16/9;background:#000;display:flex;overflow:hidden}.live-tv-player-frame .video-player-container{width:100%;height:100%;min-height:0}.live-tv-player-footer{min-height:48px;flex:0 0 48px;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #29313b;background:#10151b;color:#7d8998;font-size:10px}.live-tv-player-footer>div{display:flex;gap:14px;min-width:0;overflow:hidden}.live-tv-player-footer>div span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.live-tv-player-footer button{border:1px solid #2c3540;background:#171d24;color:#9ba8b5;border-radius:7px;padding:7px 10px;display:flex;align-items:center;gap:6px;cursor:pointer;flex:0 0 auto}.live-tv-player-footer button.favorite{color:#fda4af;border-color:#5c3139}
+@keyframes liveTvPageIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes liveTvModalIn{from{opacity:0;transform:scale(.985) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes liveTvGlobeDrift{0%,100%{transform:scale(1.015) translate3d(-1%,0,0)}50%{transform:scale(1.06) translate3d(1.5%,0,0)}}
+@keyframes liveTvPulse{0%,100%{opacity:.45}50%{opacity:1}}
+@media (max-width:1100px){.live-tv-workspace{grid-template-columns:210px minmax(0,1fr) 320px}.live-tv-brand{min-width:210px}.live-tv-brand strong{font-size:15px}.live-tv-globe{width:min(43vw,390px);height:min(43vw,390px)}}
+@media (max-width:900px){.live-tv-workspace{grid-template-columns:190px minmax(0,1fr)}.live-tv-channel-panel{position:absolute;right:0;top:64px;bottom:0;width:min(350px,92vw);z-index:15;transform:translateX(100%);transition:.22s;box-shadow:-20px 0 60px rgba(0,0,0,.5)}.live-tv-main{grid-column:1/-1}.live-tv-topbar{gap:10px}.live-tv-brand{min-width:auto}.live-tv-search-wrap{max-width:none}.live-tv-top-actions{min-width:auto}.live-tv-globe-heading{left:20px;right:20px}.live-tv-globe-stage{inset:70px 0 65px}.live-tv-globe{width:min(55vw,420px);height:min(55vw,420px)}}
+@media (max-width:650px){.live-tv-topbar{height:58px;flex-basis:58px;padding:0 10px}.live-tv-brand>div:last-child,.live-tv-online-pill{display:none}.live-tv-brand{gap:6px}.live-tv-brand-mark{width:32px;height:32px}.live-tv-search-wrap{height:36px}.live-tv-workspace{height:calc(100vh - 58px);grid-template-columns:1fr}.live-tv-category-sidebar{display:none}.live-tv-globe-heading h1{font-size:20px}.live-tv-local-time{display:none}.live-tv-globe{width:72vw;height:72vw}.live-tv-globe-stage{inset:82px 0 70px}.live-tv-bottom-toolbar{padding:0 10px}.live-tv-filter-summary{display:none}.live-tv-sort-controls{width:100%;justify-content:flex-end}.live-tv-player-modal{padding:10px}.live-tv-player-card{width:100%;border-radius:11px}.live-tv-player-header{height:60px}.live-tv-player-footer>div span:nth-child(2){display:none}.live-tv-player-footer{font-size:9px}.live-tv-player-footer>div{gap:7px}}
+
+@media (prefers-reduced-motion: reduce){.live-tv-globe img{animation:none}.live-tv-player-card{animation:none}}
+@media (prefers-reduced-motion: reduce){.live-tv-page,.live-tv-player-card{animation:none}}
+
+/* Stable player controls: the live player owns its own layout and never depends on the globe. */
+.live-tv-player-card .video-player-container{position:relative;isolation:isolate}
+.live-tv-player-card .video-player-container > video{display:block;background:#000}
+.live-tv-player-card .video-player-container > div:last-child{z-index:20}
+.live-tv-player-mode-mini .video-player-container > div:last-child .p-3{padding:.5rem}
+.live-tv-player-mode-mini .video-player-container > div:last-child .mb-3{margin-bottom:.35rem}
+.live-tv-player-mode-mini .video-player-container > div:last-child .gap-4{gap:.35rem}
+.live-tv-player-mode-mini .video-player-container > div:last-child .max-w-xs{max-width:110px}
+.live-tv-player-mode-mini .video-player-container > div:last-child button{width:30px;height:30px}
+.live-tv-player-mode-mini .video-player-container > div:last-child svg{width:16px;height:16px}
+@media (max-width:650px){.live-tv-player-modal{padding:8px}.live-tv-player-card{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.live-tv-player-mode-fullscreen .live-tv-player-card{width:100vw;height:100vh}.live-tv-player-header{height:56px;flex-basis:56px}.live-tv-player-channel img{width:34px;height:34px;flex-basis:34px}.live-tv-player-channel h2{font-size:14px}.live-tv-player-window-actions{gap:4px}.live-tv-player-window-actions button{width:31px;height:31px}.live-tv-player-footer{display:none}.live-tv-player-mode-mini{padding:10px}.live-tv-player-mode-mini .live-tv-player-card{width:min(340px,calc(100vw - 20px))}}
+
+.live-tv-playback-diagnostic{min-height:34px;padding:8px 14px;border-top:1px solid #29313b;background:#0d1217;color:#9aa7b5;font-size:11px;display:flex;align-items:center;gap:10px}.live-tv-playback-diagnostic strong{color:#f2f5f8}.live-tv-playback-diagnostic span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media (max-width:650px){.live-tv-playback-diagnostic{font-size:10px;min-height:30px;padding:6px 10px}}
+
+.live-tv-native-player{position:relative;width:100%;height:100%;background:#000;overflow:hidden}
+.live-tv-native-player video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.live-tv-native-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.45),transparent 24%,transparent 68%,rgba(0,0,0,.7))}
+.live-tv-native-topline,.live-tv-native-controls{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:14px;color:#fff;font-size:12px;font-weight:700}
+.live-tv-native-source{opacity:.75;font-weight:600;margin-left:4px}
+.live-tv-native-live-dot{width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.8)}
+.live-tv-native-controls button{display:grid;place-items:center;border:0;background:rgba(15,23,42,.78);color:#fff;border-radius:8px;width:34px;height:34px;cursor:pointer}
+.live-tv-native-controls input[type=range]{width:90px}
+.live-tv-native-controls select{height:32px;border:0;border-radius:7px;background:rgba(15,23,42,.78);color:#fff;padding:0 8px}
+.live-tv-native-spacer{flex:1}
+.live-tv-native-error{align-self:center;max-width:min(80%,600px);padding:10px 14px;border-radius:9px;background:rgba(15,23,42,.82);color:#fff;pointer-events:auto;text-align:center}
+.live-tv-native-player:fullscreen{width:100vw;height:100vh}
+
+.live-tv-player-loading{height:100%;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#cbd5e1;background:#05080d}
+.live-tv-youtube-player{position:relative;width:100%;height:100%;background:#000}
+.live-tv-youtube-player iframe{width:100%;height:100%;border:0;display:block}
+.live-tv-youtube-label{position:absolute;z-index:2;left:14px;top:12px;padding:7px 10px;border-radius:8px;background:rgba(15,23,42,.82);color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em}
+.live-tv-source-badge{font-weight:800!important;letter-spacing:.03em}
+
+/* V11 desktop composition: channel guide is intentionally on the left of the 3D Earth. */
+.live-tv-workspace{grid-template-columns:350px minmax(0,1fr) 220px}
+.live-tv-channel-panel{border-left:0;border-right:1px solid #242a33}
+.live-tv-category-sidebar{border-right:0;border-left:1px solid #242a33}
+.live-tv-earth-wrap{position:relative;width:min(58vw,620px);height:min(58vw,620px);max-width:620px;max-height:620px;display:grid;place-items:center;touch-action:none;user-select:none}
+.live-tv-earth-halo{position:absolute;width:86%;height:86%;border-radius:50%;background:radial-gradient(circle,rgba(74,180,226,.16),rgba(49,127,180,.08) 48%,transparent 70%);filter:blur(16px);pointer-events:none}
+.live-tv-earth-canvas{position:relative;z-index:2;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+.live-tv-earth-canvas:active{cursor:grabbing}
+.live-tv-earth-caption{position:absolute;z-index:4;left:50%;bottom:54px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;text-align:center;text-shadow:0 2px 12px #000}
+.live-tv-earth-caption span{font-size:9px;letter-spacing:.18em;font-weight:900;color:#72d6ff}
+.live-tv-earth-caption strong{margin-top:4px;color:#eef8ff;font-size:16px}
+.live-tv-earth-caption small{margin-top:4px;color:#8392a3;font-size:9px;white-space:nowrap}
+.live-tv-earth-controls{position:absolute;z-index:5;bottom:0;left:50%;transform:translateX(-50%);display:flex;gap:5px;max-width:88%;overflow:auto;padding:3px;scrollbar-width:none}
+.live-tv-earth-controls::-webkit-scrollbar{display:none}
+.live-tv-earth-controls button{height:28px;min-width:42px;padding:0 9px;border:1px solid #2a3540;background:rgba(11,17,23,.9);color:#9eabb9;border-radius:999px;font-size:9px;font-weight:800;cursor:pointer;white-space:nowrap}
+.live-tv-earth-controls button:hover,.live-tv-earth-controls button.active{border-color:#6fc95b;background:#1b2c1a;color:#f3ffed}
+
+@media (max-width:1100px){
+  .live-tv-workspace{grid-template-columns:310px minmax(0,1fr) 190px}
+  .live-tv-earth-wrap{width:min(55vw,500px);height:min(55vw,500px)}
+}
+@media (max-width:900px){
+  .live-tv-workspace{grid-template-columns:minmax(0,1fr)}
+  .live-tv-main{grid-column:1}
+  .live-tv-channel-panel{position:absolute;left:0;top:64px;bottom:0;width:min(360px,92vw);z-index:15;transform:translateX(-100%);transition:.22s;box-shadow:20px 0 60px rgba(0,0,0,.5);border-right:1px solid #242a33}
+  .live-tv-category-sidebar{display:none}
+  .live-tv-earth-wrap{width:min(70vw,500px);height:min(70vw,500px)}
+}
+@media (max-width:650px){
+  .live-tv-earth-wrap{width:82vw;height:82vw}
+  .live-tv-earth-caption{bottom:50px}
+  .live-tv-earth-caption small{font-size:8px}
+  .live-tv-globe-stage{inset:76px 0 58px}
+}
+@media (prefers-reduced-motion: reduce){
+  .live-tv-earth-canvas{cursor:default}
+}
+
+/* ================================================================
+   V12 EXPERIENCE LAYER
+   - fixed center workspace
+   - independent channel/category scrolling
+   - category drawer hidden by default
+   - country selection controls only the guide filter
+   - no automatic Earth rotation
+   ================================================================ */
+.live-tv-page{height:100dvh;min-height:0;overflow:hidden}
+.live-tv-workspace{position:relative;display:grid;grid-template-columns:350px minmax(0,1fr);height:calc(100dvh - 64px);min-height:0;flex:1;overflow:hidden}
+.live-tv-main{min-width:0;min-height:0;height:100%;overflow:hidden}
+.live-tv-channel-panel{min-width:0;height:100%;min-height:0;overflow:hidden}
+.live-tv-channel-list{overscroll-behavior:contain}
+
+/* The category rail is an overlay, so opening it never resizes or moves the globe. */
+.live-tv-category-sidebar{position:absolute;z-index:25;top:0;right:0;bottom:0;width:320px;height:auto;min-height:0;border-left:1px solid #2a323d;background:rgba(13,17,22,.98);box-shadow:-24px 0 60px rgba(0,0,0,.38);transform:translateX(100%);transition:transform .22s cubic-bezier(.2,.75,.2,1);padding:18px 10px 12px;overflow:hidden;display:flex;flex-direction:column}
+.live-tv-category-sidebar.open{transform:translateX(0)}
+.live-tv-category-sidebar .live-tv-sidebar-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding-right:3px}
+.live-tv-category-sidebar .live-tv-nav-item{flex:0 0 42px}
+.live-tv-category-sidebar .live-tv-reset-button{flex:0 0 36px}
+.live-tv-category-toggle{position:absolute;z-index:30;top:50%;right:0;transform:translateY(-50%);width:34px;height:62px;border:1px solid #2b3541;border-right:0;border-radius:12px 0 0 12px;background:#151b22;color:#b9c5d1;display:grid;place-items:center;cursor:pointer;box-shadow:-8px 0 22px rgba(0,0,0,.28);transition:right .22s cubic-bezier(.2,.75,.2,1),background .15s,color .15s}
+.live-tv-category-toggle:hover{background:#202933;color:#fff}
+.live-tv-category-toggle.open{right:320px;background:#1a232c;color:#f5f8fb}
+.live-tv-category-toggle::after{content:'CATEGORIES';position:absolute;right:4px;top:50%;transform:translateY(-50%) rotate(-90deg) translateX(100%);transform-origin:right center;color:#617082;font-size:7px;font-weight:900;letter-spacing:.18em;pointer-events:none}
+
+/* Keep the globe visually anchored in the center panel. */
+.live-tv-globe-panel{height:100%;flex:1;min-height:0}
+.live-tv-globe-stage{inset:68px 0 104px}
+.live-tv-earth-wrap{width:min(58vh,620px);height:min(58vh,620px);max-width:620px;max-height:620px}
+.live-tv-earth-canvas{cursor:grab}
+.live-tv-earth-canvas:active{cursor:grabbing}
+
+/* V12 country selector: every country is a real button, horizontally scrollable only. */
+.live-tv-earth-country-picker{position:absolute;z-index:8;left:24px;right:24px;bottom:4px;height:58px;display:flex;align-items:center;gap:7px;overflow-x:auto;overflow-y:hidden;padding:5px 4px;scrollbar-width:thin;scrollbar-color:#34404d transparent;overscroll-behavior-x:contain}
+.live-tv-earth-country-picker::-webkit-scrollbar{height:5px}
+.live-tv-earth-country-picker::-webkit-scrollbar-track{background:transparent}
+.live-tv-earth-country-picker::-webkit-scrollbar-thumb{background:#303b48;border-radius:999px}
+.live-tv-country-button{height:40px;flex:0 0 auto;border:1px solid #293541;background:rgba(12,18,25,.92);color:#9eabb9;border-radius:9px;padding:0 10px;display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap;transition:background .14s,border-color .14s,color .14s,transform .14s}
+.live-tv-country-button:hover{background:#1a252e;border-color:#45606e;color:#e7f1f8;transform:translateY(-1px)}
+.live-tv-country-button.active{border-color:#6fc95b;background:#1b2c1a;color:#f3ffed;box-shadow:0 0 0 1px rgba(111,201,91,.1),0 0 18px rgba(111,201,91,.08)}
+.live-tv-country-button span{font-size:10px;font-weight:900;letter-spacing:.04em}
+.live-tv-country-button strong{font-size:10px;font-weight:750}
+.live-tv-country-button small{font-size:9px;color:#68798a}
+.live-tv-country-button.active small{color:#a9d88f}
+
+/* The old chip rail is superseded by the V12 full country picker. */
+.live-tv-country-strip{display:none}
+.live-tv-earth-controls{display:none}
+
+.live-tv-earth-caption{bottom:63px}
+.live-tv-earth-caption small{color:#8b9aaa}
+.live-tv-globe-heading h1{font-size:23px}
+.live-tv-globe-heading p{max-width:680px}
+
+/* Facet summary is deliberately compact so the center never becomes scrollable. */
+.live-tv-bottom-toolbar{height:46px;flex:0 0 46px}
+
+@media (max-width:1200px){
+  .live-tv-workspace{grid-template-columns:315px minmax(0,1fr)}
+  .live-tv-category-sidebar{width:300px}
+  .live-tv-category-toggle.open{right:300px}
+  .live-tv-earth-wrap{width:min(56vh,540px);height:min(56vh,540px)}
+}
+@media (max-width:900px){
+  .live-tv-workspace{grid-template-columns:1fr}
+  .live-tv-channel-panel{position:absolute;z-index:16;left:0;top:0;bottom:0;width:min(360px,92vw);transform:translateX(-100%);transition:transform .22s ease;box-shadow:20px 0 60px rgba(0,0,0,.5)}
+  .live-tv-main{grid-column:1}
+  .live-tv-category-sidebar{width:min(320px,88vw)}
+  .live-tv-category-toggle.open{right:min(320px,88vw)}
+  .live-tv-earth-wrap{width:min(62vh,500px);height:min(62vh,500px)}
+}
+@media (max-width:650px){
+  .live-tv-workspace{height:calc(100dvh - 58px)}
+  .live-tv-earth-wrap{width:min(86vw,440px);height:min(86vw,440px)}
+  .live-tv-globe-stage{inset:76px 0 92px}
+  .live-tv-earth-country-picker{left:10px;right:10px;height:52px}
+  .live-tv-category-sidebar{width:calc(100vw - 42px)}
+  .live-tv-category-toggle.open{right:calc(100vw - 42px)}
+  .live-tv-category-toggle{height:54px;width:31px}
+  .live-tv-globe-heading{top:15px;left:16px;right:16px}
+  .live-tv-globe-heading h1{font-size:20px}
+  .live-tv-globe-heading p{font-size:10px}
+  .live-tv-bottom-toolbar{padding:0 10px}
+}
+
+/* V12.2 Earth correction: larger true country-vector globe and full free rotation. */
+.live-tv-earth-wrap{width:min(68vh,700px);height:min(68vh,700px);max-width:700px;max-height:700px}
+.live-tv-earth-canvas{cursor:grab;touch-action:none}
+.live-tv-earth-canvas:active{cursor:grabbing}
+.live-tv-earth-caption{bottom:63px}
+.live-tv-earth-map-warning{position:absolute;z-index:6;top:8px;left:50%;transform:translateX(-50%);padding:6px 10px;border:1px solid #4b3c22;background:rgba(34,27,14,.9);color:#f4c96a;border-radius:8px;font-size:9px;white-space:nowrap;pointer-events:none}
+@media (max-width:1200px){.live-tv-earth-wrap{width:min(64vh,600px);height:min(64vh,600px)}}
+@media (max-width:900px){.live-tv-earth-wrap{width:min(70vh,540px);height:min(70vh,540px)}}
+@media (max-width:650px){.live-tv-earth-wrap{width:min(90vw,460px);height:min(90vw,460px)}}
+
+
+/* V12.3 performance + interaction fixes. The globe no longer carries an
+   instructional overlay; interaction is communicated through the cursor. */
+.live-tv-earth-caption{display:none!important}
+.live-tv-earth-canvas.country-hover{
+  cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='9' fill='none' stroke='%2376e35b' stroke-width='2'/%3E%3Ccircle cx='14' cy='14' r='2.5' fill='%2376e35b'/%3E%3Cpath d='M14 1v5M14 22v5M1 14h5M22 14h5' stroke='%2376e35b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 14 14,crosshair;
+}
+.live-tv-nav-skeleton{pointer-events:none;opacity:.62}
+.live-tv-nav-skeleton>span{width:18px;height:18px;border-radius:50%;background:#28313b;display:block}
+.live-tv-nav-skeleton>i{height:9px;width:90px;border-radius:4px;background:#28313b;display:block}
+.live-tv-nav-skeleton>small{height:8px;width:28px;border-radius:4px;background:#28313b;display:block;margin-left:auto}
+.live-tv-sidebar-empty{padding:18px 10px;color:#68798a;font-size:11px;line-height:1.5}

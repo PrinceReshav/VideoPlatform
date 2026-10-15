@@ -33,6 +33,17 @@ public interface CreatorProfileRepository extends JpaRepository<CreatorProfile, 
 
     Page<CreatorProfile> findByActiveTrueAndDeletedFalseAndSuspendedFalse(Pageable pageable);
 
-    @Query("SELECT cp FROM CreatorProfile cp WHERE cp.categoryId = :categoryId AND cp.active = true AND cp.deleted = false AND cp.suspended = false")
-    List<CreatorProfile> findByCategory(@Param("categoryId") UUID categoryId);
+
+    @Query("""
+    SELECT cp
+    FROM CreatorProfile cp
+    WHERE cp.category.id = :categoryId
+      AND cp.active = true
+      AND cp.deleted = false
+      AND cp.suspended = false
+    """)
+    List<CreatorProfile> findByCategory(
+            @Param("categoryId") UUID categoryId
+    );
+
 }
